@@ -195,7 +195,12 @@ async function check() {
     }
     const { data, latency } = await javaStatus(cfg.host, cfg.port, 6000);
     const pl = data.players || {};
-    const names = (pl.sample || []).map((p) => p && p.name).filter(Boolean);
+    // ผู้เล่นที่ปิด "Allow Server Listings" ในเกม เซิร์ฟจะส่งมาเป็น "Anonymous Player" (uuid ศูนย์ทั้งหมด)
+    // ตัดออกจากรายชื่อ เพื่อไม่ให้ระบบเข้าใจผิดว่ามีคนออก/เข้า (ถ้ารายชื่อไม่ครบ ระบบจะแจ้งแค่จำนวนคนเอง)
+    const NIL_UUID = '00000000-0000-0000-0000-000000000000';
+    const names = (pl.sample || [])
+      .filter((p) => p && p.name && p.name !== 'Anonymous Player' && p.id !== NIL_UUID)
+      .map((p) => p.name);
     return {
       online: true,
       players: { online: pl.online || 0, max: pl.max || 0, names },
