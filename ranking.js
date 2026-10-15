@@ -1,6 +1,7 @@
 'use strict';
 /* ---------------------------------------------------------------
  * อันดับผู้เล่น: ขุดแร่ / ขุดบล็อกรวม / ฆ่ามอนสเตอร์ / เวลาเล่น / ตายมากสุด / เดินทางไกลสุด (แยกไฟล์ เพื่ออัปเดตง่าย)
+ * ชี้ที่ผู้เล่นแล้วดูรายละเอียดของหมวดนั้นได้ (ขุด = รวมเป็นหมวดเช่นไม้/หิน, ฆ่า = รายมอนสเตอร์ ฯลฯ)
  *
  * ข้อมูลมาจากไฟล์สถิติที่ Minecraft เก็บเอง: <โลก>/stats/<uuid>.json
  * และ usercache.json (แปลง uuid เป็นชื่อ) ดึงมาได้ 2 ทาง
@@ -67,33 +68,111 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
 
   /* ---------- สรุปสถิติของผู้เล่น 1 คน ---------- */
   const TRAVEL = ['walk', 'sprint', 'crouch', 'swim', 'walk_on_water', 'walk_under_water', 'fly', 'aviate', 'boat', 'horse', 'pig', 'strider', 'minecart'];
-  const isOre = (id) => /_ore$/.test(id) || /:ancient_debris$/.test(id) || extraOres.has(id);
+  // id ที่ส่งมาตัด "minecraft:" ออกแล้ว แต่ STATS_EXTRA_ORES เขียนได้ทั้งแบบมีและไม่มี namespace
+  const isOre = (id) => /_ore$/.test(id) || /(^|:)ancient_debris$/.test(id) || extraOres.has(id) || extraOres.has(`minecraft:${id}`);
   const sum = (o) => Object.values(o || {}).reduce((a, n) => a + (Number(n) || 0), 0);
+  /* จัดหมวดบล็อก: ไม้ทุกชนิดรวมเป็น "wood", หินทุกชนิดรวมเป็น "stone" ฯลฯ
+   * ชื่อหมวดภาษาไทยอยู่ที่ฝั่งหน้าเว็บ (public/ranking-client.js) บล็อกที่ไม่รู้จักลง "other" */
+  const WOODS = 'oak|spruce|birch|jungle|acacia|dark_oak|mangrove|cherry|pale_oak|crimson|warped|bamboo';
+  const RE_WOOD = new RegExp(`^(stripped_)?(${WOODS})_(log|wood|planks|stem|hyphae|block|stairs|slab|fence|fence_gate|door|trapdoor|button|pressure_plate|sign|wall_sign|hanging_sign|wall_hanging_sign|mosaic|mosaic_stairs|mosaic_slab)$`);
+  const RE_DIRT = /^(dirt|grass_block|coarse_dirt|rooted_dirt|podzol|mycelium|farmland|dirt_path|mud|muddy_mangrove_roots|moss_block|moss_carpet|clay|soul_sand|soul_soil|crimson_nylium|warped_nylium)$/;
+  const RE_PLANT = /grass|fern|sapling|propagule|tulip|dandelion|poppy|orchid|allium|bluet|daisy|lily|rose|peony|cornflower|sunflower|lilac|petals|lichen|wheat|carrots|potatoes|beetroots|sugar_cane|cactus|^bamboo$|vine|kelp|seagrass|melon|pumpkin|berry|berries|mushroom|fungus|roots|azalea|torchflower|pitcher|cocoa|wart|chorus|bush|dripleaf|spore_blossom|sprouts/;
+  const RE_SNOW = /(^|_)(snow|ice)(_block)?$|powder_snow|packed_ice|blue_ice/;
+  const RE_FURN = /^(chest|trapped_chest|ender_chest|barrel|crafting_table|furnace|blast_furnace|smoker|torch|wall_torch|soul_torch|lantern|soul_lantern|ladder|bookshelf|chiseled_bookshelf|anvil|chipped_anvil|damaged_anvil|grindstone|stonecutter|loom|lectern|composter|cauldron|brewing_stand|enchanting_table|beacon|campfire|soul_campfire|jukebox|note_block|cartography_table|fletching_table|smithing_table|bell|flower_pot|painting|item_frame|armor_stand|candle)$|_bed$|_banner$|_shulker_box$|_candle$/;
+  const RE_REDSTONE = /redstone|repeater|comparator|piston|observer|dispenser|dropper|hopper|lever|tnt|_rail$|^rail$|target|daylight_detector|sculk_sensor|lightning_rod|tripwire/;
+  const RE_STONE = /(^|_)stone($|_)|cobble|andesite|diorite|granite|tuff|calcite|deepslate|basalt|blackstone|netherrack|obsidian|dripstone|brick|prismarine|purpur|quartz|magma|bedrock|amethyst/;
+  function blockCat(id) {
+    if (isOre(id)) return 'ore';
+    if (/_leaves$/.test(id)) return 'leaves';
+    if (RE_WOOD.test(id)) return 'wood';
+    if (RE_DIRT.test(id)) return 'dirt';
+    if (RE_PLANT.test(id)) return 'plant';
+    if (RE_SNOW.test(id)) return 'snow';
+    if (/glass/.test(id)) return 'glass';
+    if (/(_wool|_carpet)$/.test(id)) return 'wool';
+    if (RE_FURN.test(id)) return 'furniture';
+    if (RE_REDSTONE.test(id)) return 'redstone';
+    if (/sand|gravel/.test(id)) return 'sand';
+    if (/concrete|terracotta/.test(id)) return 'concrete';
+    if (RE_STONE.test(id)) return 'stone';
+    return 'other';
+  }
+  const cleanId = (id) => String(id).toLowerCase().replace(/^minecraft:/, '').slice(0, 60);
+  const byCount = (m) => Object.entries(m).sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+  // รายการ [ชื่อ, จำนวน] ตัดเหลือ max อันดับแรก ที่เหลือรวมเป็นจำนวนชนิดที่ไม่ได้แสดง
+  function topList(entries, max) {
+    return { l: entries.slice(0, max), x: Math.max(0, entries.length - max) };
+  }
+  // สถิติแบบ { "minecraft:zombie": 12 } -> { zombie: 12 } (ตัดค่า 0 ทิ้ง)
+  function countMap(src) {
+    const out = {};
+    for (const [id, n] of Object.entries(src || {})) {
+      const c = Number(n) || 0;
+      if (c > 0) out[cleanId(id)] = (out[cleanId(id)] || 0) + c;
+    }
+    return out;
+  }
+  const r1 = (n) => Math.round(n * 10) / 10;
+
   function summarize(json) {
     const st = (json && json.stats) || {};
-    const mined = st['minecraft:mined'] || {};
-    let ores = 0, blocks = 0;
-    const list = [];
-    for (const [id, n] of Object.entries(mined)) {
-      const c = Number(n) || 0;
-      if (c <= 0) continue;
-      blocks += c; // นับทุกบล็อกที่ขุด
-      if (isOre(String(id).toLowerCase())) ores += c;
-      list.push([String(id).toLowerCase().replace(/^minecraft:/, '').slice(0, 60), c]);
-    }
-    // บล็อกที่ขุดมากสุด 12 อันดับแรกของผู้เล่นคนนี้ (ไว้แสดงตอนชี้ที่ชื่อ)
-    list.sort((a, b) => b[1] - a[1]);
-    const top = list.slice(0, 12);
     const custom = st['minecraft:custom'] || {};
-    const mobs = custom['minecraft:mob_kills'] != null ? Number(custom['minecraft:mob_kills']) || 0 : sum(st['minecraft:killed']);
+
+    // --- ขุดบล็อก: รวมเป็นหมวด (ไม้ หิน ดิน ...) และแยกแร่ออกมาเป็นรายชนิด ---
+    const mined = countMap(st['minecraft:mined']);
+    let ores = 0, blocks = 0;
+    const cats = {}, oreKinds = {};
+    for (const [id, c] of Object.entries(mined)) {
+      blocks += c;
+      const cat = blockCat(id);
+      cats[cat] = (cats[cat] || 0) + c;
+      if (cat === 'ore') {
+        ores += c;
+        const kind = id.replace(/^deepslate_/, ''); // แร่ดีปสเลตรวมกับแร่ปกติ
+        oreKinds[kind] = (oreKinds[kind] || 0) + c;
+      }
+    }
+
+    // --- ฆ่ามอนสเตอร์: แยกรายชนิด (ไม่ปนกับบล็อก) ---
+    const killed = countMap(st['minecraft:killed']);
+    const mobs = custom['minecraft:mob_kills'] != null ? Number(custom['minecraft:mob_kills']) || 0 : sum(killed);
+    const mobList = topList(byCount(killed), 15);
+
+    // --- ตาย: ถูกมอนสเตอร์ตัวไหนฆ่า ส่วนที่เหลือ (ตกจากที่สูง ไฟ ลาวา จมน้ำ ฯลฯ) รวมเป็น _other ---
+    const deaths = Number(custom['minecraft:deaths']) || 0;
+    const killedBy = countMap(st['minecraft:killed_by']);
+    const deathList = topList(byCount(killedBy), 12);
+    const otherDeaths = Math.max(0, deaths - sum(killedBy));
+
+    // --- เวลา (tick -> ชั่วโมง) ---
+    const HOURS = [['play', custom['minecraft:play_time'] != null ? 'play_time' : 'play_one_minute'], ['sneak', 'sneak_time'], ['since_death', 'time_since_death'], ['since_rest', 'time_since_rest'], ['world', 'total_world_time']];
+    const timeList = [];
+    for (const [key, stat] of HOURS) {
+      const h = r1((Number(custom[`minecraft:${stat}`]) || 0) / 72000);
+      if (h > 0) timeList.push([key, h]);
+    }
     const ticks = Number(custom['minecraft:play_time'] != null ? custom['minecraft:play_time'] : custom['minecraft:play_one_minute']) || 0;
-    // ระยะเดินทาง (เซนติเมตร -> กม.) รวมทุกวิธี ยกเว้นตกจากที่สูงและปีนป่าย
+
+    // --- ระยะเดินทาง (เซนติเมตร -> กม.) แยกตามวิธี ยกเว้นตกจากที่สูงและปีนป่าย ---
     let cm = 0;
-    for (const k of TRAVEL) cm += Number(custom[`minecraft:${k}_one_cm`]) || 0;
+    const distMap = {};
+    for (const k of TRAVEL) {
+      const c = Number(custom[`minecraft:${k}_one_cm`]) || 0;
+      cm += c;
+      const km = r1(c / 100000);
+      if (km > 0) distMap[k] = km;
+    }
+
     return {
-      o: ores, b: blocks, t: top, x: Math.max(0, list.length - top.length), m: mobs, h: Math.round((ticks / 72000) * 10) / 10,
-      d: Number(custom['minecraft:deaths']) || 0,
-      k: Math.round((cm / 100000) * 10) / 10,
+      o: ores, b: blocks, m: mobs, h: r1(ticks / 72000), d: deaths, k: r1(cm / 100000),
+      v: {
+        b: byCount(cats),                            // [[หมวดบล็อก, จำนวน]]
+        o: byCount(oreKinds),                        // [[ชนิดแร่, จำนวน]]
+        m: mobList.l, mx: mobList.x,                 // [[มอนสเตอร์, จำนวน]] + จำนวนชนิดที่ไม่ได้แสดง
+        d: deathList.l.concat(otherDeaths > 0 ? [['_other', otherDeaths]] : []), dx: deathList.x,
+        h: timeList,                                 // [[ชนิดเวลา, ชั่วโมง]]
+        k: byCount(distMap),                         // [[วิธีเดินทาง, กม.]]
+      },
     };
   }
 
@@ -160,7 +239,7 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
     res.json({
       enabled: true,
       updatedAt: data.updatedAt,
-      players: data.players.map((p) => ({ n: p.n, known: p.known !== false, o: p.o, b: p.b || 0, t: p.t || [], x: p.x || 0, m: p.m, h: p.h, d: p.d, k: p.k || 0 })),
+      players: data.players.map((p) => ({ n: p.n, known: p.known !== false, o: p.o, b: p.b || 0, m: p.m, h: p.h, d: p.d, k: p.k || 0, v: p.v || null })),
     });
   });
   const adminInfo = () => ({ ok: true, enabled: true, mode, minutes, updatedAt: data.updatedAt, players: data.players.length, status, running });

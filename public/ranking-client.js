@@ -27,25 +27,51 @@
     return h < 48 ? 'อัปเดตเมื่อ ' + h + ' ชม.ที่แล้ว' : 'อัปเดตเมื่อ ' + Math.round(h / 24) + ' วันที่แล้ว';
   }
 
-  /* ---------- กล่องแสดงรายการบล็อกที่ขุด (ชี้เมาส์ / โฟกัส / แตะ) ---------- */
-  var TH = {
-    stone: 'หิน', cobblestone: 'หินกรวด', deepslate: 'ดีปสเลต', cobbled_deepslate: 'ดีปสเลตกรวด',
-    dirt: 'ดิน', grass_block: 'บล็อกหญ้า', coarse_dirt: 'ดินหยาบ', sand: 'ทราย', red_sand: 'ทรายแดง', gravel: 'กรวด',
-    clay: 'ดินเหนียว', netherrack: 'เนเธอร์แร็ก', end_stone: 'หินเอนด์', obsidian: 'ออบซิเดียน',
-    andesite: 'แอนดีไซต์', diorite: 'ไดออไรต์', granite: 'แกรนิต', tuff: 'ทัฟฟ์', calcite: 'แคลไซต์', basalt: 'บะซอลต์',
+  /* ---------- กล่องรายละเอียดของผู้เล่น (ชี้เมาส์ / โฟกัส / แตะ) ----------
+   * แสดงตามแท็บที่เลือกอยู่ แยกกันชัดเจน: แท็บขุด = หมวดบล็อก, แท็บฆ่า = รายมอนสเตอร์ ฯลฯ */
+  var CAT = {
+    wood: 'ไม้', stone: 'หิน', dirt: 'ดิน / หญ้า', sand: 'ทราย / กรวด', ore: 'แร่', leaves: 'ใบไม้', plant: 'พืช / ดอกไม้',
+    snow: 'หิมะ / น้ำแข็ง', glass: 'กระจก', wool: 'ขนแกะ / พรม', concrete: 'คอนกรีต / เทอราคอตตา',
+    furniture: 'ของใช้ / เครื่องตกแต่ง', redstone: 'เรดสโตน / กลไก', other: 'อื่น ๆ'
+  };
+  var ORE = {
     coal_ore: 'แร่ถ่านหิน', iron_ore: 'แร่เหล็ก', copper_ore: 'แร่ทองแดง', gold_ore: 'แร่ทอง', redstone_ore: 'แร่เรดสโตน',
     lapis_ore: 'แร่ลาพิส', diamond_ore: 'แร่เพชร', emerald_ore: 'แร่มรกต', nether_gold_ore: 'แร่ทองเนเธอร์',
-    nether_quartz_ore: 'แร่ควอตซ์', ancient_debris: 'เศษโบราณ',
-    oak_log: 'ท่อนไม้โอ๊ก', spruce_log: 'ท่อนไม้สปรูซ', birch_log: 'ท่อนไม้เบิร์ช', jungle_log: 'ท่อนไม้จังเกิล',
-    acacia_log: 'ท่อนไม้อะคาเซีย', dark_oak_log: 'ท่อนไม้ดาร์กโอ๊ก', mangrove_log: 'ท่อนไม้แมนโกรฟ', cherry_log: 'ท่อนไม้เชอร์รี',
-    oak_leaves: 'ใบโอ๊ก', snow: 'หิมะ', snow_block: 'บล็อกหิมะ', ice: 'น้ำแข็ง', soul_sand: 'ทรายวิญญาณ', glowstone: 'โกลว์สโตน'
+    nether_quartz_ore: 'แร่ควอตซ์', ancient_debris: 'เศษโบราณ (Ancient Debris)'
   };
-  function bname(id) {
-    if (TH[id]) return TH[id];
-    var m = /^deepslate_(.+_ore)$/.exec(id);
-    if (m && TH[m[1]]) return TH[m[1]] + ' (ดีปสเลต)';
-    return id.replace(/_/g, ' ');
-  }
+  var MOB = {
+    zombie: 'ซอมบี้', skeleton: 'โครงกระดูก', creeper: 'ครีปเปอร์', spider: 'แมงมุม', cave_spider: 'แมงมุมถ้ำ',
+    enderman: 'เอนเดอร์แมน', witch: 'แม่มด', slime: 'สไลม์', magma_cube: 'แมกมาคิวบ์', blaze: 'เบลซ', ghast: 'แกสต์',
+    zombified_piglin: 'ซอมบี้พิกลิน', piglin: 'พิกลิน', piglin_brute: 'พิกลินบรูท', hoglin: 'ฮอกลิน', zoglin: 'โซกลิน',
+    wither_skeleton: 'วิเทอร์สเกเลตัน', drowned: 'ซอมบี้จมน้ำ', husk: 'ฮัสก์', stray: 'สเตรย์', phantom: 'แฟนทอม',
+    pillager: 'พิลเลเจอร์', vindicator: 'วินดิเคเตอร์', evoker: 'อีโวเกอร์', ravager: 'ราเวเจอร์', vex: 'เวกซ์',
+    guardian: 'การ์เดียน', elder_guardian: 'เอลเดอร์การ์เดียน', shulker: 'ชูลเกอร์', silverfish: 'ซิลเวอร์ฟิช',
+    endermite: 'เอนเดอร์ไมต์', bogged: 'บ็อกเก็ด', breeze: 'บรีซ', warden: 'วอร์เดน', wither: 'วิเทอร์',
+    ender_dragon: 'เอนเดอร์ดราก้อน', creaking: 'ครีคิง', zombie_villager: 'ซอมบี้ชาวบ้าน', player: 'ผู้เล่น',
+    cow: 'วัว', pig: 'หมู', sheep: 'แกะ', chicken: 'ไก่', rabbit: 'กระต่าย', horse: 'ม้า', squid: 'หมึก',
+    glow_squid: 'หมึกเรืองแสง', bat: 'ค้างคาว', villager: 'ชาวบ้าน', iron_golem: 'ไอรอนโกเลม', wolf: 'หมาป่า',
+    cod: 'ปลาคอด', salmon: 'ปลาแซลมอน', tropical_fish: 'ปลาเขตร้อน', turtle: 'เต่า', goat: 'แพะ', fox: 'จิ้งจอก'
+  };
+  var TIME = { play: 'เวลาที่เล่น', sneak: 'เวลาที่ย่อตัว', since_death: 'นับจากตายครั้งล่าสุด', since_rest: 'นับจากนอนครั้งล่าสุด', world: 'เวลาที่อยู่ในโลก' };
+  var DIST = {
+    walk: 'เดิน', sprint: 'วิ่ง', crouch: 'ย่อตัวเดิน', swim: 'ว่ายน้ำ', walk_on_water: 'เดินบนน้ำ', walk_under_water: 'เดินใต้น้ำ',
+    fly: 'บิน (ครีเอทีฟ)', aviate: 'บินด้วยปีก (Elytra)', boat: 'เรือ', horse: 'ม้า', pig: 'หมู', strider: 'สไตรเดอร์', minecart: 'รถราง'
+  };
+  var pretty = function (id) { return String(id).replace(/_/g, ' '); };
+  function oreName(id) { return ORE[id] || pretty(id); }
+  function mobName(id) { return MOB[id] || pretty(id); }
+  function deathName(id) { return id === '_other' ? 'สาเหตุอื่น (ตกที่สูง ไฟ ลาวา จมน้ำ ฯลฯ)' : mobName(id); }
+
+  // รายละเอียดของแต่ละแท็บ: คีย์ข้อมูล, หัวข้อ, ตัวแปลชื่อ, ตัวจัดรูปแบบค่า, ข้อความเมื่อไม่มีข้อมูล
+  var DETAIL = {
+    blocks: { f: 'b', head: function (p) { return 'ขุดรวม ' + nf.format(p.b || 0) + ' บล็อก'; }, name: function (id) { return CAT[id] || CAT.other; }, val: function (n) { return nf.format(n); }, empty: 'ยังไม่มีข้อมูลการขุด', bars: true },
+    ores: { f: 'o', head: function (p) { return 'ขุดแร่รวม ' + nf.format(p.o || 0) + ' บล็อก'; }, name: oreName, val: function (n) { return nf.format(n); }, empty: 'ยังไม่เคยขุดแร่', bars: true },
+    mobs: { f: 'm', more: 'mx', head: function (p) { return 'ฆ่ามอนสเตอร์รวม ' + nf.format(p.m || 0) + ' ตัว'; }, name: mobName, val: function (n) { return nf.format(n); }, empty: 'ยังไม่เคยฆ่ามอนสเตอร์', bars: true },
+    deaths: { f: 'd', more: 'dx', head: function (p) { return 'ตายรวม ' + nf.format(p.d || 0) + ' ครั้ง'; }, name: deathName, val: function (n) { return nf.format(n) + ' ครั้ง'; }, empty: 'ยังไม่เคยตาย', bars: true },
+    hours: { f: 'h', head: function (p) { return 'เล่นรวม ' + nf.format(p.h || 0) + ' ชม.'; }, name: function (id) { return TIME[id] || pretty(id); }, val: function (n) { return nf.format(n) + ' ชม.'; }, empty: 'ยังไม่มีข้อมูลเวลา', bars: false },
+    dist: { f: 'k', head: function (p) { return 'เดินทางรวม ' + nf.format(p.k || 0) + ' กม.'; }, name: function (id) { return DIST[id] || pretty(id); }, val: function (n) { return nf.format(n) + ' กม.'; }, empty: 'ยังไม่มีข้อมูลการเดินทาง', bars: true }
+  };
+
   var tip = document.createElement('div');
   tip.className = 'rank-tip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true;
   document.body.appendChild(tip);
@@ -53,26 +79,34 @@
 
   function hideTip() { tip.hidden = true; tipFor = null; }
   function showTip(li, p) {
+    var dt = DETAIL[kind];
     tip.textContent = '';
     var h = document.createElement('div'); h.className = 'tt-h';
     var hn = document.createElement('b'); hn.textContent = p.n;
-    var hs = document.createElement('span'); hs.textContent = 'ขุดรวม ' + nf.format(p.b || 0) + ' บล็อก';
+    var hs = document.createElement('span'); hs.textContent = dt.head(p);
     h.appendChild(hn); h.appendChild(hs); tip.appendChild(h);
-    var t = p.t || [];
-    if (!t.length) {
-      var e = document.createElement('div'); e.className = 'tt-e'; e.textContent = 'ยังไม่มีข้อมูลการขุด';
+    var t = p.v && Array.isArray(p.v[dt.f]) ? p.v[dt.f] : null;
+    if (!p.v) {
+      var w = document.createElement('div'); w.className = 'tt-e'; w.textContent = 'รายละเอียดจะขึ้นหลังซิงก์ข้อมูลครั้งถัดไป';
+      tip.appendChild(w);
+    } else if (!t || !t.length) {
+      var e = document.createElement('div'); e.className = 'tt-e'; e.textContent = dt.empty;
       tip.appendChild(e);
     } else {
-      var max = t[0][1] || 1;
+      var max = dt.bars ? (Number(t[0][1]) || 1) : 0;
       t.forEach(function (r) {
         var row = document.createElement('div'); row.className = 'tt-r';
-        var bar = document.createElement('i'); bar.style.width = Math.max(4, Math.round((r[1] / max) * 100)) + '%';
-        var nm = document.createElement('span'); nm.className = 'tt-n'; nm.textContent = bname(String(r[0]));
-        var ct = document.createElement('span'); ct.className = 'tt-c'; ct.textContent = nf.format(r[1]);
-        row.appendChild(bar); row.appendChild(nm); row.appendChild(ct); tip.appendChild(row);
+        if (max) {
+          var bar = document.createElement('i'); bar.style.width = Math.max(4, Math.round((r[1] / max) * 100)) + '%';
+          row.appendChild(bar);
+        }
+        var nm = document.createElement('span'); nm.className = 'tt-n'; nm.textContent = dt.name(String(r[0]));
+        var ct = document.createElement('span'); ct.className = 'tt-c'; ct.textContent = dt.val(r[1]);
+        row.appendChild(nm); row.appendChild(ct); tip.appendChild(row);
       });
-      if (p.x > 0) {
-        var more = document.createElement('div'); more.className = 'tt-e'; more.textContent = 'และอีก ' + nf.format(p.x) + ' ชนิด';
+      var rest = dt.more ? Number(p.v[dt.more]) || 0 : 0;
+      if (rest > 0) {
+        var more = document.createElement('div'); more.className = 'tt-e'; more.textContent = 'และอีก ' + nf.format(rest) + ' ชนิด';
         tip.appendChild(more);
       }
     }
@@ -119,7 +153,7 @@
       vl.title = LABEL[kind];
       li.appendChild(nm); li.appendChild(vl);
       li.className = 'has-tip'; li.tabIndex = 0;
-      li.setAttribute('aria-label', p.n + ' — ดูรายการบล็อกที่ขุด');
+      li.setAttribute('aria-label', p.n + ' — ดูรายละเอียด: ' + LABEL[kind]);
       li.addEventListener('mouseenter', function () { showTip(li, p); });
       li.addEventListener('mouseleave', hideTip);
       li.addEventListener('focus', function () { showTip(li, p); });
