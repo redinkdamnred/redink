@@ -275,6 +275,19 @@ label{display:block;font-weight:600;margin-bottom:4px;color:var(--head)}
 .rank li:nth-child(3) .rk{background:linear-gradient(160deg,#eeb07c,#b0652f);border-color:#b0652f;color:#2a1306}
 .rank img{width:28px;height:28px;image-rendering:pixelated;flex:none;border-radius:4px}
 .rank .rn{flex:1;min-width:0;overflow-wrap:anywhere;font-weight:600}
+.rank li.has-tip{cursor:pointer;border-radius:8px}
+.rank li.has-tip:hover,.rank li.has-tip:focus-visible{background:var(--hover);outline:0}
+.rank-tip{position:fixed;z-index:60;width:min(300px,calc(100vw - 16px));padding:12px 14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line2);box-shadow:var(--shadow);backdrop-filter:blur(8px);pointer-events:none;font-size:.9rem;color:var(--ink)}
+.rank-tip[hidden]{display:none}
+.rank-tip .tt-h{display:flex;flex-direction:column;gap:2px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.rank-tip .tt-h b{color:var(--head);font-family:var(--font-display);font-size:1rem;overflow-wrap:anywhere}
+.rank-tip .tt-h span{color:var(--muted);font-size:.82rem}
+.rank-tip .tt-r{position:relative;display:flex;justify-content:space-between;gap:10px;padding:3px 6px;margin:2px 0;border-radius:5px;overflow:hidden}
+.rank-tip .tt-r i{position:absolute;left:0;top:0;bottom:0;background:var(--accent-soft);z-index:0}
+.rank-tip .tt-n,.rank-tip .tt-c{position:relative;z-index:1}
+.rank-tip .tt-n{min-width:0;overflow-wrap:anywhere}
+.rank-tip .tt-c{font-family:var(--font-display);font-weight:700;white-space:nowrap;color:var(--head)}
+.rank-tip .tt-e{margin-top:6px;color:var(--muted);font-size:.82rem}
 .rank .rv{margin-left:auto;font-family:var(--font-display);font-weight:700;font-size:1.15rem;white-space:nowrap;color:var(--head)}
 
 /* ===== toast ===== */

@@ -27,7 +27,70 @@
     return h < 48 ? 'อัปเดตเมื่อ ' + h + ' ชม.ที่แล้ว' : 'อัปเดตเมื่อ ' + Math.round(h / 24) + ' วันที่แล้ว';
   }
 
+  /* ---------- กล่องแสดงรายการบล็อกที่ขุด (ชี้เมาส์ / โฟกัส / แตะ) ---------- */
+  var TH = {
+    stone: 'หิน', cobblestone: 'หินกรวด', deepslate: 'ดีปสเลต', cobbled_deepslate: 'ดีปสเลตกรวด',
+    dirt: 'ดิน', grass_block: 'บล็อกหญ้า', coarse_dirt: 'ดินหยาบ', sand: 'ทราย', red_sand: 'ทรายแดง', gravel: 'กรวด',
+    clay: 'ดินเหนียว', netherrack: 'เนเธอร์แร็ก', end_stone: 'หินเอนด์', obsidian: 'ออบซิเดียน',
+    andesite: 'แอนดีไซต์', diorite: 'ไดออไรต์', granite: 'แกรนิต', tuff: 'ทัฟฟ์', calcite: 'แคลไซต์', basalt: 'บะซอลต์',
+    coal_ore: 'แร่ถ่านหิน', iron_ore: 'แร่เหล็ก', copper_ore: 'แร่ทองแดง', gold_ore: 'แร่ทอง', redstone_ore: 'แร่เรดสโตน',
+    lapis_ore: 'แร่ลาพิส', diamond_ore: 'แร่เพชร', emerald_ore: 'แร่มรกต', nether_gold_ore: 'แร่ทองเนเธอร์',
+    nether_quartz_ore: 'แร่ควอตซ์', ancient_debris: 'เศษโบราณ',
+    oak_log: 'ท่อนไม้โอ๊ก', spruce_log: 'ท่อนไม้สปรูซ', birch_log: 'ท่อนไม้เบิร์ช', jungle_log: 'ท่อนไม้จังเกิล',
+    acacia_log: 'ท่อนไม้อะคาเซีย', dark_oak_log: 'ท่อนไม้ดาร์กโอ๊ก', mangrove_log: 'ท่อนไม้แมนโกรฟ', cherry_log: 'ท่อนไม้เชอร์รี',
+    oak_leaves: 'ใบโอ๊ก', snow: 'หิมะ', snow_block: 'บล็อกหิมะ', ice: 'น้ำแข็ง', soul_sand: 'ทรายวิญญาณ', glowstone: 'โกลว์สโตน'
+  };
+  function bname(id) {
+    if (TH[id]) return TH[id];
+    var m = /^deepslate_(.+_ore)$/.exec(id);
+    if (m && TH[m[1]]) return TH[m[1]] + ' (ดีปสเลต)';
+    return id.replace(/_/g, ' ');
+  }
+  var tip = document.createElement('div');
+  tip.className = 'rank-tip'; tip.setAttribute('role', 'tooltip'); tip.hidden = true;
+  document.body.appendChild(tip);
+  var tipFor = null;
+
+  function hideTip() { tip.hidden = true; tipFor = null; }
+  function showTip(li, p) {
+    tip.textContent = '';
+    var h = document.createElement('div'); h.className = 'tt-h';
+    var hn = document.createElement('b'); hn.textContent = p.n;
+    var hs = document.createElement('span'); hs.textContent = 'ขุดรวม ' + nf.format(p.b || 0) + ' บล็อก';
+    h.appendChild(hn); h.appendChild(hs); tip.appendChild(h);
+    var t = p.t || [];
+    if (!t.length) {
+      var e = document.createElement('div'); e.className = 'tt-e'; e.textContent = 'ยังไม่มีข้อมูลการขุด';
+      tip.appendChild(e);
+    } else {
+      var max = t[0][1] || 1;
+      t.forEach(function (r) {
+        var row = document.createElement('div'); row.className = 'tt-r';
+        var bar = document.createElement('i'); bar.style.width = Math.max(4, Math.round((r[1] / max) * 100)) + '%';
+        var nm = document.createElement('span'); nm.className = 'tt-n'; nm.textContent = bname(String(r[0]));
+        var ct = document.createElement('span'); ct.className = 'tt-c'; ct.textContent = nf.format(r[1]);
+        row.appendChild(bar); row.appendChild(nm); row.appendChild(ct); tip.appendChild(row);
+      });
+      if (p.x > 0) {
+        var more = document.createElement('div'); more.className = 'tt-e'; more.textContent = 'และอีก ' + nf.format(p.x) + ' ชนิด';
+        tip.appendChild(more);
+      }
+    }
+    tip.hidden = false; tipFor = li;
+    // จัดตำแหน่งให้อยู่ในจอ: ใต้แถว ถ้าที่ไม่พอก็ขึ้นไปอยู่เหนือแถว
+    var r = li.getBoundingClientRect(), w = tip.offsetWidth, hh = tip.offsetHeight;
+    var left = Math.min(Math.max(8, r.left + 40), Math.max(8, window.innerWidth - w - 8));
+    var top = r.bottom + 6;
+    if (top + hh > window.innerHeight - 8) top = Math.max(8, r.top - hh - 6);
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  document.addEventListener('click', function (e) { if (tipFor && !tipFor.contains(e.target)) hideTip(); });
+  window.addEventListener('scroll', hideTip, { passive: true });
+  window.addEventListener('resize', hideTip);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
+
   function render() {
+    hideTip();
     list.textContent = '';
     stat.textContent = data && data.updatedAt ? ago(data.updatedAt) : '';
     var k = KEY[kind];
@@ -55,6 +118,13 @@
       var vl = document.createElement('span'); vl.className = 'rv'; vl.textContent = fmt(kind, p[k]);
       vl.title = LABEL[kind];
       li.appendChild(nm); li.appendChild(vl);
+      li.className = 'has-tip'; li.tabIndex = 0;
+      li.setAttribute('aria-label', p.n + ' — ดูรายการบล็อกที่ขุด');
+      li.addEventListener('mouseenter', function () { showTip(li, p); });
+      li.addEventListener('mouseleave', hideTip);
+      li.addEventListener('focus', function () { showTip(li, p); });
+      li.addEventListener('blur', hideTip);
+      li.addEventListener('click', function () { if (tipFor === li) hideTip(); else showTip(li, p); });
       list.appendChild(li);
     });
   }

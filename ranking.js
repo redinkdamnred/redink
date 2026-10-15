@@ -73,11 +73,17 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
     const st = (json && json.stats) || {};
     const mined = st['minecraft:mined'] || {};
     let ores = 0, blocks = 0;
+    const list = [];
     for (const [id, n] of Object.entries(mined)) {
       const c = Number(n) || 0;
+      if (c <= 0) continue;
       blocks += c; // นับทุกบล็อกที่ขุด
       if (isOre(String(id).toLowerCase())) ores += c;
+      list.push([String(id).toLowerCase().replace(/^minecraft:/, '').slice(0, 60), c]);
     }
+    // บล็อกที่ขุดมากสุด 12 อันดับแรกของผู้เล่นคนนี้ (ไว้แสดงตอนชี้ที่ชื่อ)
+    list.sort((a, b) => b[1] - a[1]);
+    const top = list.slice(0, 12);
     const custom = st['minecraft:custom'] || {};
     const mobs = custom['minecraft:mob_kills'] != null ? Number(custom['minecraft:mob_kills']) || 0 : sum(st['minecraft:killed']);
     const ticks = Number(custom['minecraft:play_time'] != null ? custom['minecraft:play_time'] : custom['minecraft:play_one_minute']) || 0;
@@ -85,7 +91,7 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
     let cm = 0;
     for (const k of TRAVEL) cm += Number(custom[`minecraft:${k}_one_cm`]) || 0;
     return {
-      o: ores, b: blocks, m: mobs, h: Math.round((ticks / 72000) * 10) / 10,
+      o: ores, b: blocks, t: top, x: Math.max(0, list.length - top.length), m: mobs, h: Math.round((ticks / 72000) * 10) / 10,
       d: Number(custom['minecraft:deaths']) || 0,
       k: Math.round((cm / 100000) * 10) / 10,
     };
@@ -154,7 +160,7 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
     res.json({
       enabled: true,
       updatedAt: data.updatedAt,
-      players: data.players.map((p) => ({ n: p.n, known: p.known !== false, o: p.o, b: p.b || 0, m: p.m, h: p.h, d: p.d, k: p.k || 0 })),
+      players: data.players.map((p) => ({ n: p.n, known: p.known !== false, o: p.o, b: p.b || 0, t: p.t || [], x: p.x || 0, m: p.m, h: p.h, d: p.d, k: p.k || 0 })),
     });
   });
   const adminInfo = () => ({ ok: true, enabled: true, mode, minutes, updatedAt: data.updatedAt, players: data.players.length, status, running });
