@@ -95,10 +95,6 @@ h2::before{animation:fxSq 1.6s steps(1) infinite}
   76%{transform:translate(-3px,0)} 78%{transform:translate(2px,1px)} 80%{transform:translate(0,0)}}
 .lamp.blink i.on:nth-child(10),.lamp.blink i.on:nth-child(11),
 .lamp.blink i.on:nth-child(14),.lamp.blink i.on:nth-child(15){background:transparent}
-.hero.closed::before{content:"Z z z";position:absolute;z-index:3;left:calc(34px + 88px);top:24px;pointer-events:none;
-  font-family:var(--font-pixel);font-size:.8rem;color:var(--closed-ink);letter-spacing:.2em;white-space:pre;
-  animation:fxZzz 2.4s steps(6) infinite}
-@keyframes fxZzz{0%{transform:translate(0,14px);opacity:0}25%{opacity:1}100%{transform:translate(14px,-22px);opacity:0}}
 .hero::after{animation:fxMob 4s steps(4) infinite}
 @keyframes fxMob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
@@ -168,8 +164,10 @@ h2::before{animation:fxSq 1.6s steps(1) infinite}
 #fxToggle::before{content:"";width:10px;height:10px;background:var(--open);box-shadow:0 0 8px var(--open)}
 html.fx-off #fxToggle::before{background:var(--unknown);box-shadow:none}
 @media (max-width:860px){
-  #fxToggle{width:auto;margin:0;min-height:38px;padding:4px 12px}
-  .hero.closed::before{left:calc(20px + 54px);top:14px}
+  .side-foot{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+  .brand{flex:1 1 130px;min-width:130px}
+  #fxToggle{width:auto;margin:0;min-height:38px;padding:4px 10px}
+  #fxToggle .t{display:none}
   .stat .v{font-size:1.05rem}
   #fxScan{opacity:.35}
 }

@@ -195,6 +195,26 @@
     if (e.clientX >= x - m && e.clientX <= x + w + m && e.clientY >= y - m && e.clientY <= y + h + m) igniteCreeper();
   }, { passive: true });
 
+  /* ---------- Z z z ตอนเซิร์ฟปิด: วาดบน canvas ข้างหัวครีปเปอร์ (ไม่ใช่ element จึงไม่ไปทับ/บังปุ่มอื่น) ---------- */
+  var Z = ['11111', '00010', '00100', '01000', '11111'];
+  var zHero = $('hero'), zLamp = $('lamp');
+  function drawZzz(t) {
+    if (!zHero || !zLamp || !zHero.classList.contains('closed')) return;
+    var r = zLamp.getBoundingClientRect();
+    if (r.width < 10 || r.bottom < 0 || r.top > innerHeight) return;
+    // เริ่มเหนือมุมขวาบนของหัวครีปเปอร์ แล้วลอยขึ้น (ไม่ล้ำไปทับข้อความทางขวา)
+    var x0 = r.right / PX - 9, y0 = r.top / PX - 5;
+    fg.fillStyle = isDark() ? '#ff9a8c' : '#c6392a';
+    for (var k = 0; k < 3; k++) {
+      var p = ((t / 2.6) + k / 3) % 1;
+      var a = p < .2 ? p / .2 : p > .75 ? (1 - p) / .25 : 1;
+      var zx = Math.round(x0 + p * 4 + k), zy = Math.round(y0 - p * 6);
+      fg.globalAlpha = Math.max(0, Math.min(1, a));
+      for (var yy = 0; yy < 5; yy++) for (var xx = 0; xx < 5; xx++) if (Z[yy].charAt(xx) === '1') fg.fillRect(zx + xx, zy + yy, 1, 1);
+    }
+    fg.globalAlpha = 1;
+  }
+
   /* ---------- ลูป ---------- */
   var last = performance.now(), acc = 0, raf = 0, T = 0;
   function frame(now) {
@@ -209,6 +229,7 @@
     if (!cr && now >= nextCr && !doc.hidden) spawnCreeper();
     if (cr) { updateCreeper(dt, T); if (cr) drawCreeper(cr, T); }
     if (parts.length) drawParts(dt);
+    drawZzz(T);
   }
   function start() {
     if (raf || !on) return;
@@ -232,7 +253,10 @@
   var foot = doc.querySelector('.side-foot');
   var tog = doc.createElement('button');
   tog.type = 'button'; tog.id = 'fxToggle';
-  function togLabel() { tog.textContent = on ? 'เอฟเฟกต์: เปิด' : 'เอฟเฟกต์: ปิด'; tog.setAttribute('aria-pressed', on ? 'true' : 'false'); }
+  var togT = doc.createElement('span'), togV = doc.createElement('span');
+  togT.className = 't'; togT.textContent = 'เอฟเฟกต์: ';
+  tog.appendChild(togT); tog.appendChild(togV);
+  function togLabel() { togV.textContent = on ? 'เปิด' : 'ปิด'; tog.setAttribute('aria-pressed', on ? 'true' : 'false'); tog.setAttribute('aria-label', 'เอฟเฟกต์: ' + (on ? 'เปิด' : 'ปิด')); }
   tog.addEventListener('click', function () {
     on = !on; store('fx', on ? '1' : '0');
     root.classList.toggle('fx-off', !on);
