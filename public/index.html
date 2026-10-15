@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-<script>try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
-<link rel="stylesheet" href="/style.css?v=4">
-<link rel="stylesheet" href="/pixel-fx.css?v=4">
-<script src="/no-zoom.js?v=4"></script>
+<script>try{var t=localStorage.getItem('srvState');if(t==='closed'||t==='open')document.documentElement.setAttribute('data-theme',t==='closed'?'dark':'light')}catch(e){}</script>
+<link rel="stylesheet" href="/style.css?v=5">
+<link rel="stylesheet" href="/pixel-fx.css?v=5">
+<script src="/no-zoom.js?v=5"></script>
 </head>
 <body>
 <div class="app">
@@ -35,7 +35,6 @@
       <button type="button" class="nv" data-h="history" data-target="p-history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>ประวัติสถานะ</span></button>
       <button type="button" class="nv" data-h="sched" data-target="schedBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>ช่วงเวลาที่มักเปิด</span></button>
     </nav>
-    <div class="side-foot"><button id="theme" type="button">Creeper Mode</button></div>
   </aside>
 
   <main class="main" id="main">
@@ -159,20 +158,13 @@
   function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)for(var k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;return e}
   function hhmm(ts){return new Date(ts).toLocaleTimeString('th-TH',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'})}
 
-  /* ---------- ธีม มืด/สว่าง ---------- */
-  function effectiveTheme(){
-    var t=document.documentElement.getAttribute('data-theme');
-    if(t==='dark'||t==='light')return t;
-    return window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  /* ---------- ธีมตามสถานะเซิร์ฟ: เปิด = Creeper (สว่าง) / ปิด = Warden (มืด) ---------- */
+  function applyTheme(online){
+    if(online!==true&&online!==false)return;
+    var n=online?'light':'dark', root=document.documentElement;
+    if(root.getAttribute('data-theme')!==n)root.setAttribute('data-theme',n);
+    store('srvState',online?'open':'closed');
   }
-  function themeLabel(){$('theme').textContent=effectiveTheme()==='dark'?'Creeper Mode':'Warden Mode'}
-  $('theme').addEventListener('click',function(){
-    var n=effectiveTheme()==='dark'?'light':'dark';
-    document.documentElement.setAttribute('data-theme',n);
-    store('theme',n);
-    themeLabel();
-  });
-  themeLabel();
 
   /* ---------- แถบซ้าย: สลับหน้าข้อมูล ---------- */
   var navBtns=[].slice.call(document.querySelectorAll('.nv'));
@@ -229,12 +221,19 @@
   }
 
   /* ---------- วาดหน้า ---------- */
+  /* หน้า 8x8: เปิด = ครีปเปอร์, ปิด = วอร์เดน (X = สีเข้ม, C = แกนเรืองแสงกะพริบ) */
+  var WARDEN=['X......X','XX....XX','.XXXXXX.','.X.XX.X.','.XXXXXX.','..XCCX..','..XCCX..','...XX...'];
   function lamp(on){
     var l=$('lamp');
     if(!l.children.length)for(var i=0;i<64;i++)l.appendChild(el('i'));
     var face=[9,10,13,14,17,18,21,22,27,28,34,35,36,37,42,43,44,45,50,53];
     var known=on===true||on===false;
-    for(var j=0;j<64;j++)l.children[j].className=known&&face.indexOf(j)>-1?'on':'';
+    for(var j=0;j<64;j++){
+      var c='';
+      if(known&&on===false){var ch=WARDEN[j>>3].charAt(j&7);c=ch==='X'?'on':ch==='C'?'gl':''}
+      else if(known&&face.indexOf(j)>-1)c='on';
+      l.children[j].className=c;
+    }
   }
 
   function chip(name){
@@ -270,6 +269,7 @@
     var hero=$('hero');
     hero.className='hero '+(st.online===true?'open':st.online===false?'closed':'');
     lamp(st.online);
+    applyTheme(st.online);
     $('dot').className='dot '+(st.online===true?'open':st.online===false?'closed':'');
     $('stateTxt').textContent=st.online===true?'เปิดอยู่':st.online===false?'ปิดอยู่':'กำลังเช็ค…';
     $('navPl').textContent=st.online===true&&st.players?String(st.players.online):'';
@@ -384,8 +384,8 @@
   setInterval(render,1000*20);
 })();
 </script>
-<script src="/chat-client.js?v=4" defer></script>
-<script src="/ranking-client.js?v=4" defer></script>
-<script src="/pixel-fx.js?v=4" defer></script>
+<script src="/chat-client.js?v=5" defer></script>
+<script src="/ranking-client.js?v=5" defer></script>
+<script src="/pixel-fx.js?v=5" defer></script>
 </body>
 </html>
