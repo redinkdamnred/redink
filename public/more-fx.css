@@ -1,0 +1,106 @@
+/* =====================================================================
+   MORE FX — อนิเมชั่นชุดเพิ่มเติม (วางทับของเดิม ไม่แก้ style.css / pixel-fx.css / extra-fx.css)
+   - ดวงอาทิตย์ / พระจันทร์พิกเซล เคลื่อนตามเวลาจริง (เวลาไทย)
+   - แถบไฮไลต์เมนูซ้ายเลื่อนตามแท็บ
+   - ออโรร่าเคลื่อนไหวในการ์ดสถานะ
+   - แถบอันดับวิ่งตามสัดส่วน + เหรียญ 3 อันดับแรกแวววาว
+   - ผู้เล่นที่เพิ่งเข้าเกมมีวงแสงกะพริบ
+   - เส้นใต้หัวข้อวาดออกตอนเปิดแท็บ
+   ปิดอัตโนมัติถ้าผู้ใช้ตั้งค่า "ลดการเคลื่อนไหว"
+   ===================================================================== */
+@media (prefers-reduced-motion:no-preference){
+
+/* ---------- ดวงอาทิตย์ / พระจันทร์ ---------- */
+#mxSky{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:-1;pointer-events:none;overflow:hidden}
+#mxSky .mx-orb{position:absolute;left:0;top:0;width:56px;height:56px;image-rendering:pixelated;
+  transition:translate 1.2s ease-out,opacity .8s ease-out;will-change:translate}
+#mxSky .mx-orb svg{display:block;width:100%;height:100%;shape-rendering:crispEdges;overflow:visible}
+#mxSky .mx-sun{opacity:0;filter:drop-shadow(0 0 18px rgba(255,210,74,.65))}
+#mxSky .mx-moon{opacity:0;filter:drop-shadow(0 0 16px rgba(134,245,234,.55))}
+html.mx-day #mxSky .mx-sun{opacity:.95}
+html.mx-night #mxSky .mx-moon{opacity:.9}
+#mxSky .mx-sun svg{animation:mxSunSpin 24s steps(8) infinite}
+#mxSky .mx-moon svg{animation:mxMoonBob 6s ease-in-out infinite}
+@keyframes mxSunSpin{to{rotate:360deg}}
+@keyframes mxMoonBob{0%,100%{translate:0 0}50%{translate:0 -4px}}
+
+/* ---------- เมนูซ้าย: แถบไฮไลต์เลื่อนตามแท็บ ---------- */
+.nav{position:relative}
+.mx-nav-bar{position:absolute;left:0;top:0;width:4px;height:0;background:var(--accent);box-shadow:0 0 14px var(--glow);
+  pointer-events:none;z-index:3;opacity:0;
+  transition:translate .38s cubic-bezier(.3,.85,.3,1),height .38s cubic-bezier(.3,.85,.3,1),opacity .2s}
+.mx-nav-bar.on{opacity:1}
+.mx-nav-bar::after{content:"";position:absolute;left:0;top:0;width:60px;height:100%;
+  background:linear-gradient(90deg,var(--accent-soft),transparent);pointer-events:none}
+@media (min-width:861px){
+  .nav.mx-ind .nv[aria-current="page"]::before{display:none}
+}
+@media (max-width:860px){ .mx-nav-bar{display:none} }
+
+/* ---------- การ์ดสถานะ: ออโรร่า ---------- */
+.mx-aurora{overflow:hidden}
+.hero>.mx-aurora{position:absolute;inset:0;z-index:0;pointer-events:none}
+.mx-aurora i{position:absolute;width:55%;height:140%;border-radius:50%;
+  background:radial-gradient(closest-side,var(--mx-blob,var(--accent-soft)),transparent 72%);
+  filter:blur(14px);will-change:translate,scale}
+.mx-aurora i:nth-child(1){left:-12%;top:-30%;animation:mxAuA 17s ease-in-out infinite alternate}
+.mx-aurora i:nth-child(2){right:-14%;top:-10%;animation:mxAuB 21s ease-in-out infinite alternate;opacity:.8}
+.mx-aurora i:nth-child(3){left:28%;top:30%;width:40%;animation:mxAuC 14s ease-in-out infinite alternate;opacity:.65}
+@keyframes mxAuA{from{translate:0 0;scale:1}to{translate:26% 14%;scale:1.25}}
+@keyframes mxAuB{from{translate:0 0;scale:1.1}to{translate:-24% 18%;scale:.85}}
+@keyframes mxAuC{from{translate:-10% 0;scale:.9}to{translate:18% -16%;scale:1.2}}
+.hero.open{--mx-blob:rgba(91,229,138,.24)}
+.hero.closed{--mx-blob:rgba(47,227,212,.22)}
+
+/* ---------- ตอนกำลังเช็คสถานะ: ข้อความหายใจ ---------- */
+.hero:not(.open):not(.closed) .word,
+.hero:not(.open):not(.closed) .sub{animation:mxBreath 1.4s ease-in-out infinite}
+@keyframes mxBreath{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* ---------- เส้นใต้หัวข้อวาดออก ---------- */
+.panel.active h2{
+  background-image:linear-gradient(90deg,var(--accent),transparent);
+  background-repeat:no-repeat;background-position:0 100%;background-size:0 2px;
+  padding-bottom:5px;animation:mxUnder .9s .12s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes mxUnder{to{background-size:min(100%,260px) 2px}}
+
+/* ---------- อันดับ: แถบสัดส่วน + เหรียญแวววาว ---------- */
+.rank li{position:relative}
+.rank li .mx-bar{position:absolute;left:0;bottom:-1px;height:3px;width:var(--w,0%);pointer-events:none;
+  background:linear-gradient(90deg,var(--bar-a),var(--bar-b));box-shadow:0 0 10px var(--glow);
+  transform-origin:0 50%;animation:mxBar .9s cubic-bezier(.2,.7,.3,1) both;animation-delay:calc(var(--n,0) * 70ms + 150ms)}
+.rank li:nth-child(1) .mx-bar{background:linear-gradient(90deg,#c8921c,#ffe08a)}
+.rank li:nth-child(2) .mx-bar{background:linear-gradient(90deg,#a4aeac,#f1f4f3)}
+.rank li:nth-child(3) .mx-bar{background:linear-gradient(90deg,#b0652f,#eeb07c)}
+@keyframes mxBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.rank .rk{position:relative;overflow:hidden}
+.rank li:nth-child(-n+3) .rk::after{content:"";position:absolute;top:-20%;bottom:-20%;left:0;width:45%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);
+  translate:-160% 0;rotate:12deg;animation:mxMedal 3.6s ease-in-out infinite}
+.rank li:nth-child(2) .rk::after{animation-delay:.5s}
+.rank li:nth-child(3) .rk::after{animation-delay:1s}
+@keyframes mxMedal{0%,55%{translate:-160% 0}85%,100%{translate:380% 0}}
+.rank li .rv.mx-count{font-variant-numeric:tabular-nums}
+
+/* ---------- ผู้เล่นที่เพิ่งเข้าเกม ---------- */
+/* ใช้ data-attribute (ไม่ใช้คลาส) เพราะโค้ดเดิมใน index.html เขียนทับ className ของชิปเมื่อรูปสกินโหลดไม่ขึ้น */
+.chip[data-mx-join]{position:relative;animation:mxJoin 2.4s ease-out var(--mx-d,0ms) 1 both}
+.chip[data-mx-join]::after{content:"+";position:absolute;right:-4px;top:-8px;min-width:14px;height:14px;
+  display:grid;place-items:center;font:700 11px/1 var(--font-pixel,monospace);
+  background:var(--open);color:#02171a;pointer-events:none;
+  animation:mxPlus 2.4s ease-out var(--mx-d,0ms) forwards}
+@keyframes mxJoin{
+  0%{box-shadow:0 0 0 0 var(--open-line),3px 3px 0 var(--hard)}
+  25%{box-shadow:0 0 0 6px var(--open-soft),0 0 22px var(--open-line),3px 3px 0 var(--hard)}
+  100%{box-shadow:0 0 0 0 transparent,3px 3px 0 var(--hard)}}
+@keyframes mxPlus{0%{translate:0 6px;opacity:0}15%{translate:0 0;opacity:1}70%{opacity:1}100%{translate:0 -8px;opacity:0}}
+
+/* ---------- แท็บอันดับ / ปุ่มสถานะ: จมลงแล้วเด้งกลับ ---------- */
+.tabs button[aria-pressed="true"]{animation:mxTab .35s cubic-bezier(.3,1.6,.5,1)}
+@keyframes mxTab{0%{scale:.92}100%{scale:1}}
+
+/* ---------- ข้อความแจ้ง (toast) เด้งขึ้น ---------- */
+.toast.show{animation:mxToast .4s cubic-bezier(.3,1.5,.5,1)}
+@keyframes mxToast{0%{scale:.85}100%{scale:1}}
+
+}
