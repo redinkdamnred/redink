@@ -14,12 +14,17 @@
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
-  function isDark() {
+  var darkNow = true;
+  function calcDark() {
     var t = root.getAttribute('data-theme');
     if (t === 'dark') return true;
     if (t === 'light') return false;
     return !(window.matchMedia && matchMedia('(prefers-color-scheme:light)').matches);
   }
+  function isDark() { return darkNow; }
+  darkNow = calcDark();
+  if (window.MutationObserver) new MutationObserver(function () { darkNow = calcDark(); }).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  try { matchMedia('(prefers-color-scheme:light)').addEventListener('change', function () { darkNow = calcDark(); }); } catch (e) {}
 
   /* ---------- สร้างเลเยอร์ ---------- */
   function mk(tag, id) { var e = doc.createElement(tag); e.id = id; e.setAttribute('aria-hidden', 'true'); doc.body.appendChild(e); return e; }
@@ -196,10 +201,8 @@
   function frame(now) {
     raf = requestAnimationFrame(frame);
     var dt = (now - last) / 1000; last = now;
-    if (dt > .25) dt = .25;
-    acc += dt;
-    if (acc < 1 / 30) return;     // ~30fps พอสำหรับพิกเซลอาร์ต ประหยัดแบต
-    dt = acc; acc = 0; T += dt;
+    if (dt > .1) dt = .1;
+    T += dt;                      // วาดทุกเฟรมของจอ (canvas เล็กมาก เบา) ไม่หน่วงเหลือ ~20fps อีกแล้ว
     drawBg(T, dt);
     fg.clearRect(0, 0, W, H);
     if (!cr && now >= nextCr && !doc.hidden) spawnCreeper();
@@ -208,7 +211,7 @@
   }
   function start() {
     if (raf || !on) return;
-    last = performance.now(); acc = 0;
+    last = performance.now();
     resize();
     raf = requestAnimationFrame(frame);
   }
