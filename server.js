@@ -672,7 +672,13 @@ app.get('/badge.svg', (req, res) => {
   );
 });
 
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '5m' }));
+// ไฟล์ html/js/css ให้เบราว์เซอร์เช็คเวอร์ชันใหม่ทุกครั้ง (กันค้างของเก่าหลัง deploy), รูปแคชไว้ได้
+app.use(express.static(path.join(__dirname, 'public'), {
+  maxAge: 0,
+  setHeaders: (res, p) => {
+    res.set('Cache-Control', /\.(webp|png|jpe?g|gif|ico)$/i.test(p) ? 'public, max-age=86400' : 'no-cache');
+  },
+}));
 
 app.listen(cfg.webPort, () => {
   console.log(`เว็บพร้อมแล้วที่ http://localhost:${cfg.webPort}`);

@@ -142,7 +142,7 @@
   var FEET_B = ['.ggg..ggg.', '.gdg..gdg.', '.ggg..ggg.', '......ggg.'];
   var PAL = { g: '#5ec43a', d: '#3f9a28', k: '#0b1a08' };
   var SPR_W = 10, SPR_H = 16;
-  var cr = null, nextCr = performance.now() + rnd(7000, 12000);
+  var cr = null, nextCr = performance.now() + rnd(3000, 6000);
 
   function drawCreeper(c, t) {
     var rows = HEAD.concat(BODY, (Math.floor(t * 5) % 2) ? FEET_A : FEET_B);
@@ -170,7 +170,7 @@
       cr.x += cr.dir * 15 * dt;
       var prog = cr.dir > 0 ? (cr.x + SPR_W / 2) / W : 1 - (cr.x + SPR_W / 2) / W;
       if (prog >= cr.igniteAt && prog < 1.1) cr.state = 'fuse';
-      if (cr.x > W + 4 || cr.x < -SPR_W - 4) { cr = null; nextCr = performance.now() + rnd(35000, 70000); return; }
+      if (cr.x > W + 4 || cr.x < -SPR_W - 4) { cr = null; nextCr = performance.now() + rnd(15000, 30000); return; }
     }
     if (cr.state === 'fuse') {
       cr.fuseT += dt;
@@ -179,7 +179,7 @@
         var cx = (cr.x + SPR_W / 2) * PX, cy = (cr.y + SPR_H / 2) * PX;
         burst(cx, cy, 110, C_BOOM, { vmin: 12, vmax: 70, g: 80, lmin: .7, lmax: 1.7, big: .4, lift: -20 });
         quake();
-        cr = null; nextCr = performance.now() + rnd(35000, 70000);
+        cr = null; nextCr = performance.now() + rnd(15000, 30000);
       }
     }
   }
