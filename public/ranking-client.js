@@ -5,10 +5,10 @@
   if (!box) return;
   var list = document.getElementById('rankList'), stat = document.getElementById('rankStat');
   var tabs = [].slice.call(box.querySelectorAll('[data-k]'));
-  var data = null, kind = 'ores';
+  var data = null, kind = 'blocks';
 
-  var KEY = { ores: 'o', mobs: 'm', hours: 'h', deaths: 'd', dist: 'k' };
-  var LABEL = { ores: 'บล็อกแร่ที่ขุด', mobs: 'มอนสเตอร์ที่ฆ่า', hours: 'ชั่วโมงที่เล่น', deaths: 'จำนวนครั้งที่ตาย', dist: 'ระยะทางที่เดินทาง' };
+  var KEY = { ores: 'o', blocks: 'b', mobs: 'm', hours: 'h', deaths: 'd', dist: 'k' };
+  var LABEL = { ores: 'บล็อกแร่ที่ขุด', blocks: 'บล็อกทั้งหมดที่ขุด', mobs: 'มอนสเตอร์ที่ฆ่า', hours: 'ชั่วโมงที่เล่น', deaths: 'จำนวนครั้งที่ตาย', dist: 'ระยะทางที่เดินทาง' };
   var nf = new Intl.NumberFormat('th-TH');
 
   function fmt(k, v) {

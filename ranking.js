@@ -1,6 +1,6 @@
 'use strict';
 /* ---------------------------------------------------------------
- * อันดับผู้เล่น: ขุดแร่ / ฆ่ามอนสเตอร์ / เวลาเล่น / ตายมากสุด / เดินทางไกลสุด (แยกไฟล์ เพื่ออัปเดตง่าย)
+ * อันดับผู้เล่น: ขุดแร่ / ขุดบล็อกรวม / ฆ่ามอนสเตอร์ / เวลาเล่น / ตายมากสุด / เดินทางไกลสุด (แยกไฟล์ เพื่ออัปเดตง่าย)
  *
  * ข้อมูลมาจากไฟล์สถิติที่ Minecraft เก็บเอง: <โลก>/stats/<uuid>.json
  * และ usercache.json (แปลง uuid เป็นชื่อ) ดึงมาได้ 2 ทาง
@@ -72,8 +72,12 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
   function summarize(json) {
     const st = (json && json.stats) || {};
     const mined = st['minecraft:mined'] || {};
-    let ores = 0;
-    for (const [id, n] of Object.entries(mined)) if (isOre(String(id).toLowerCase())) ores += Number(n) || 0;
+    let ores = 0, blocks = 0;
+    for (const [id, n] of Object.entries(mined)) {
+      const c = Number(n) || 0;
+      blocks += c; // นับทุกบล็อกที่ขุด
+      if (isOre(String(id).toLowerCase())) ores += c;
+    }
     const custom = st['minecraft:custom'] || {};
     const mobs = custom['minecraft:mob_kills'] != null ? Number(custom['minecraft:mob_kills']) || 0 : sum(st['minecraft:killed']);
     const ticks = Number(custom['minecraft:play_time'] != null ? custom['minecraft:play_time'] : custom['minecraft:play_one_minute']) || 0;
@@ -81,7 +85,7 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
     let cm = 0;
     for (const k of TRAVEL) cm += Number(custom[`minecraft:${k}_one_cm`]) || 0;
     return {
-      o: ores, m: mobs, h: Math.round((ticks / 72000) * 10) / 10,
+      o: ores, b: blocks, m: mobs, h: Math.round((ticks / 72000) * 10) / 10,
       d: Number(custom['minecraft:deaths']) || 0,
       k: Math.round((cm / 100000) * 10) / 10,
     };
@@ -150,7 +154,7 @@ module.exports = function setupRanking({ app, DATA_DIR, adminAuth }) {
     res.json({
       enabled: true,
       updatedAt: data.updatedAt,
-      players: data.players.map((p) => ({ n: p.n, known: p.known !== false, o: p.o, m: p.m, h: p.h, d: p.d, k: p.k || 0 })),
+      players: data.players.map((p) => ({ n: p.n, known: p.known !== false, o: p.o, b: p.b || 0, m: p.m, h: p.h, d: p.d, k: p.k || 0 })),
     });
   });
   const adminInfo = () => ({ ok: true, enabled: true, mode, minutes, updatedAt: data.updatedAt, players: data.players.length, status, running });
