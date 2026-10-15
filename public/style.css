@@ -319,6 +319,3 @@ label{display:block;font-weight:600;margin-bottom:4px;color:var(--head)}
   .hero{grid-template-columns:1fr}
   .stat .v{font-size:1.7rem}
 }
-@media (prefers-reduced-motion:reduce){
-  *{transition:none!important;animation:none!important}
-}

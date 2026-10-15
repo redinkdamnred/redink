@@ -3,20 +3,14 @@
    - ฉากหลัง canvas ความละเอียดต่ำ: เมฆ/ใบไม้ (Creeper) หรือดาว/สปอร์ (Warden)
    - ครีปเปอร์เดินข้ามจอ แตะแล้วชนวนระเบิดได้ + จอสั่น
    - พิมพ์ดีดข้อความสถานะ, ตัวเลขสุ่มก่อนนิ่ง, กราฟโตทีละขั้น, ดอกไม้ไฟตอนเซิร์ฟเปิด
-   - ปุ่ม "เอฟเฟกต์" ปิด/เปิดทั้งหมด (จำค่าไว้) และเคารพ prefers-reduced-motion
+   - เอฟเฟกต์เปิดตลอดเวลา ไม่มีปุ่มปิด
    ===================================================================== */
 (function () {
   "use strict";
   var doc = document, root = doc.documentElement;
   var $ = function (id) { return doc.getElementById(id); };
   var PX = 4; // 1 พิกเซลของ canvas = 4 px บนจอ
-  var reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches);
-
-  function store(k, v) {
-    try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; }
-  }
-  var on = !reduce && store('fx') !== '0';
-  root.classList.toggle('fx-off', !on);
+  var on = true; // เอฟเฟกต์เปิดตลอด ไม่มีปุ่มปิด
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
@@ -195,25 +189,7 @@
     if (e.clientX >= x - m && e.clientX <= x + w + m && e.clientY >= y - m && e.clientY <= y + h + m) igniteCreeper();
   }, { passive: true });
 
-  /* ---------- Z z z ตอนเซิร์ฟปิด: วาดบน canvas ข้างหัวครีปเปอร์ (ไม่ใช่ element จึงไม่ไปทับ/บังปุ่มอื่น) ---------- */
-  var Z = ['11111', '00010', '00100', '01000', '11111'];
-  var zHero = $('hero'), zLamp = $('lamp');
-  function drawZzz(t) {
-    if (!zHero || !zLamp || !zHero.classList.contains('closed')) return;
-    var r = zLamp.getBoundingClientRect();
-    if (r.width < 10 || r.bottom < 0 || r.top > innerHeight) return;
-    // เริ่มเหนือมุมขวาบนของหัวครีปเปอร์ แล้วลอยขึ้น (ไม่ล้ำไปทับข้อความทางขวา)
-    var x0 = r.right / PX - 9, y0 = r.top / PX - 5;
-    fg.fillStyle = isDark() ? '#ff9a8c' : '#c6392a';
-    for (var k = 0; k < 3; k++) {
-      var p = ((t / 2.6) + k / 3) % 1;
-      var a = p < .2 ? p / .2 : p > .75 ? (1 - p) / .25 : 1;
-      var zx = Math.round(x0 + p * 4 + k), zy = Math.round(y0 - p * 6);
-      fg.globalAlpha = Math.max(0, Math.min(1, a));
-      for (var yy = 0; yy < 5; yy++) for (var xx = 0; xx < 5; xx++) if (Z[yy].charAt(xx) === '1') fg.fillRect(zx + xx, zy + yy, 1, 1);
-    }
-    fg.globalAlpha = 1;
-  }
+  /* Z z z ตอนเซิร์ฟปิด ทำด้วย HTML/CSS (.zzz ใน index.html) อยู่ในกล่องของหัวครีปเปอร์ จึงไม่ไปทับข้อความอื่น */
 
   /* ---------- ลูป ---------- */
   var last = performance.now(), acc = 0, raf = 0, T = 0;
@@ -229,7 +205,6 @@
     if (!cr && now >= nextCr && !doc.hidden) spawnCreeper();
     if (cr) { updateCreeper(dt, T); if (cr) drawCreeper(cr, T); }
     if (parts.length) drawParts(dt);
-    drawZzz(T);
   }
   function start() {
     if (raf || !on) return;
@@ -237,34 +212,12 @@
     resize();
     raf = requestAnimationFrame(frame);
   }
-  function stop() {
-    if (raf) cancelAnimationFrame(raf); raf = 0;
-    bg.clearRect(0, 0, W, H); fg.clearRect(0, 0, W, H);
-    parts.length = 0; cr = null;
-  }
   var rt;
-  addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { if (on) resize(); }, 150); });
+  addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(resize, 150); });
   doc.addEventListener('visibilitychange', function () {
     if (doc.hidden) { if (raf) { cancelAnimationFrame(raf); raf = 0; } }
-    else if (on) start();
+    else start();
   });
-
-  /* ---------- ปุ่มเปิด/ปิดเอฟเฟกต์ ---------- */
-  var foot = doc.querySelector('.side-foot');
-  var tog = doc.createElement('button');
-  tog.type = 'button'; tog.id = 'fxToggle';
-  var togT = doc.createElement('span'), togV = doc.createElement('span');
-  togT.className = 't'; togT.textContent = 'เอฟเฟกต์: ';
-  tog.appendChild(togT); tog.appendChild(togV);
-  function togLabel() { togV.textContent = on ? 'เปิด' : 'ปิด'; tog.setAttribute('aria-pressed', on ? 'true' : 'false'); tog.setAttribute('aria-label', 'เอฟเฟกต์: ' + (on ? 'เปิด' : 'ปิด')); }
-  tog.addEventListener('click', function () {
-    on = !on; store('fx', on ? '1' : '0');
-    root.classList.toggle('fx-off', !on);
-    if (on) start(); else stop();
-    togLabel();
-  });
-  togLabel();
-  if (foot) foot.appendChild(tog);
 
   /* ---------- พิมพ์ดีดข้อความสถานะ ---------- */
   function graphemes(s) {
@@ -392,7 +345,7 @@
   doc.addEventListener('click', function (e) {
     if (!on || !e.target.closest) return;
     var b = e.target.closest('button,.btn');
-    if (!b || b.id === 'fxToggle') return;
+    if (!b) return;
     var c = rectCenter(b);
     if (b.id === 'copy') burst(c[0], c[1], 26, C_XP, { vmin: 8, vmax: 26, g: -30, lift: -22, lmin: .7, lmax: 1.5, big: .35 });
     else if (b.id === 'theme') burst(c[0], c[1], 44, isDark() ? ['#5ec43a', '#8bd96a', '#b6f08f', '#fff'] : ['#2fe3d4', '#86f5ea', '#0b7f8c', '#fff'], { vmin: 14, vmax: 50, g: 30, big: .3 });
@@ -401,5 +354,5 @@
 
   /* ---------- เริ่ม ---------- */
   tagChips(); tagStrip();
-  if (on) start();
+  start();
 })();

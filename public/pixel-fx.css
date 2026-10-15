@@ -1,7 +1,6 @@
 /* =====================================================================
    PIXEL FX — อนิเมชั่นสไตล์เกมพิกเซล (วางทับ style.css โดยไม่แก้ไฟล์เดิม)
-   ปิดทั้งหมดได้ด้วยปุ่ม "เอฟเฟกต์" ที่แถบซ้าย (คลาส html.fx-off)
-   และเคารพ prefers-reduced-motion อัตโนมัติ
+   เอฟเฟกต์เปิดตลอดเวลา ไม่มีปุ่มปิด
    ===================================================================== */
 
 :root{
@@ -16,10 +15,10 @@
 #fxBg,#fxFg{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges}
 #fxBg{z-index:-1;opacity:.9}
 #fxFg{z-index:40}
-#fxScan{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:.55;
+#fxScan{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:.3;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 4px)}
 #fxScan::after{content:"";position:absolute;left:0;right:0;height:18vh;top:-20vh;
-  background:linear-gradient(180deg,transparent,rgba(255,255,255,.035),transparent);
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.03),transparent);
   animation:fxRoll 9s linear infinite}
 @keyframes fxRoll{to{top:110vh}}
 
@@ -30,11 +29,11 @@
              inset 0 0 0 2px var(--line),
              inset 0 1px 0 rgba(255,255,255,.06)!important;
 }
-.block::before,.stat::before{ /* มุมสี่เหลี่ยมเล็กๆ ตกแต่ง */
-  content:"";position:absolute;left:-2px;top:-2px;width:8px;height:8px;background:var(--accent);
+.block::before,.stat::before{ /* มุมสี่เหลี่ยมเล็กๆ ตกแต่ง (อยู่ในกรอบ ไม่ล้นออกนอกการ์ด) */
+  content:"";position:absolute;left:0;top:0;width:8px;height:8px;background:var(--accent);
   pointer-events:none;z-index:2;animation:fxCorner 2.4s steps(1) infinite}
 .stat{position:relative}
-.stat::before{left:-4px;top:-2px}
+.stat::before{left:0;top:0}
 @keyframes fxCorner{0%{background:var(--accent)}50%{background:var(--bar-c)}}
 .block>*,.stat>*{position:relative;z-index:1}
 
@@ -58,12 +57,14 @@ button.primary,button[type="submit"],.hero .actions button[aria-pressed="true"],
 
 /* ---------- ฟอนต์พิกเซลสำหรับตัวเลข/ตัวอักษรอังกฤษ ---------- */
 .stat .v{font-family:var(--font-pixel);font-size:1.35rem;line-height:1.7;letter-spacing:.02em;
-  text-shadow:3px 3px 0 var(--hard);color:var(--head)}
+  text-shadow:2px 2px 0 var(--hard);color:var(--head);white-space:nowrap;overflow:hidden;text-overflow:clip}
 .stat .k{letter-spacing:.02em}
 .word{text-shadow:4px 4px 0 var(--hard)}
 .hero.open .word{text-shadow:4px 4px 0 var(--hard),0 0 24px var(--open-soft)}
 h2{text-shadow:2px 2px 0 var(--hard)}
-.nv .badge{font-family:var(--font-pixel);font-size:.6rem;border-radius:0;box-shadow:2px 2px 0 var(--hard)}
+/* ตัวเลขข้างเมนู: ป้ายเรียบ อยู่ติดขอบขวาของปุ่ม ไม่มีเงาลอย */
+.nv .badge{font-family:var(--font-pixel);font-size:.6rem;line-height:22px;height:22px;min-width:24px;padding:0 6px;
+  border-radius:0;box-shadow:none;flex:none;margin-left:auto;align-self:center;letter-spacing:0}
 .rank .rv,.dc-count{font-family:var(--font-pixel);font-size:.78rem}
 .addr code{font-family:var(--font-pixel);font-size:.9rem;line-height:1.8;letter-spacing:.03em}
 
@@ -93,8 +94,11 @@ h2::before{animation:fxSq 1.6s steps(1) infinite}
   0%,70%,100%{transform:translate(0,0)}
   72%{transform:translate(-3px,1px)} 74%{transform:translate(3px,-1px)}
   76%{transform:translate(-3px,0)} 78%{transform:translate(2px,1px)} 80%{transform:translate(0,0)}}
+/* กะพริบตา: ซ่อนตาทั้ง 2 แถว (ช่อง 9,10,13,14,17,18,21,22 = nth-child +1) */
 .lamp.blink i.on:nth-child(10),.lamp.blink i.on:nth-child(11),
-.lamp.blink i.on:nth-child(14),.lamp.blink i.on:nth-child(15){background:transparent}
+.lamp.blink i.on:nth-child(14),.lamp.blink i.on:nth-child(15),
+.lamp.blink i.on:nth-child(18),.lamp.blink i.on:nth-child(19),
+.lamp.blink i.on:nth-child(22),.lamp.blink i.on:nth-child(23){background:transparent}
 .hero::after{animation:fxMob 4s steps(4) infinite}
 @keyframes fxMob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 
@@ -159,23 +163,22 @@ h2::before{animation:fxSq 1.6s steps(1) infinite}
 #fxFlash.go{animation:fxFlash .35s steps(3) 1}
 @keyframes fxFlash{0%{opacity:.75}100%{opacity:0}}
 
-/* ---------- ปุ่มเปิด/ปิดเอฟเฟกต์ ---------- */
-#fxToggle{width:100%;margin-top:10px;min-height:38px;font-size:.8rem;font-family:var(--font-pixel);letter-spacing:.02em}
-#fxToggle::before{content:"";width:10px;height:10px;background:var(--open);box-shadow:0 0 8px var(--open)}
-html.fx-off #fxToggle::before{background:var(--unknown);box-shadow:none}
+/* ---------- หัวครีปเปอร์ + Z z z (อยู่ในกล่องเดียวกัน ไม่ลอยไปทับข้อความ) ---------- */
+.lamp-wrap{position:relative;width:112px;height:112px;flex:none}
+.zzz{position:absolute;left:58%;bottom:100%;width:44px;height:30px;pointer-events:none;display:none}
+.hero.closed .zzz{display:block}
+.zzz svg{position:absolute;left:0;bottom:0;width:12px;height:12px;fill:var(--closed-ink);opacity:0;
+  animation:fxZ 3s steps(12) infinite}
+.zzz svg:nth-child(2){width:15px;height:15px;animation-delay:1s}
+.zzz svg:nth-child(3){width:18px;height:18px;animation-delay:2s}
+@keyframes fxZ{
+  0%{opacity:0;transform:translate(0,0)}
+  15%{opacity:1}
+  70%{opacity:1}
+  100%{opacity:0;transform:translate(16px,-12px)}}
 @media (max-width:860px){
-  .side-foot{display:flex;align-items:center;gap:6px;flex:0 0 auto}
-  .brand{flex:1 1 130px;min-width:130px}
-  #fxToggle{width:auto;margin:0;min-height:38px;padding:4px 10px}
-  #fxToggle .t{display:none}
+  .lamp-wrap{width:72px;height:72px}
+  .hero.closed{padding-top:44px}
   .stat .v{font-size:1.05rem}
   #fxScan{opacity:.35}
-}
-
-/* ---------- ปิดเอฟเฟกต์ ---------- */
-html.fx-off #fxBg,html.fx-off #fxFg,html.fx-off #fxScan{display:none}
-html.fx-off *,html.fx-off *::before,html.fx-off *::after{animation:none!important}
-@media (prefers-reduced-motion:reduce){
-  #fxFg,#fxScan{display:none}
-  *,*::before,*::after{animation:none!important;transition:none!important}
 }
