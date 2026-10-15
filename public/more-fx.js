@@ -56,7 +56,37 @@
     moon.appendChild(s);
   })();
   sky.appendChild(sun); sky.appendChild(moon);
+
+  /* บล็อกพิกเซลลอยขึ้น: สีสว่าง (Creeper) / สีฟ้าเรือง (Warden) สลับด้วย CSS ตามธีม */
+  (function cubes() {
+    var LIGHT = ['#5ec43a', '#8bd96a', '#8a5a2b', '#ffffff', '#b6f08f', '#3f9a28'];
+    var DARK = ['#2fe3d4', '#86f5ea', '#17a8b0', '#5b8cff', '#a98bff', '#0e3d42'];
+    var n = innerWidth < 700 ? 9 : 16;
+    for (var i = 0; i < n; i++) {
+      var c = doc.createElement('i');
+      c.className = 'mx-cube';
+      var s = Math.round(14 + Math.random() * 22);
+      c.style.setProperty('--x', (Math.random() * 96).toFixed(1) + 'vw');
+      c.style.setProperty('--s', s + 'px');
+      c.style.setProperty('--t', (16 + Math.random() * 18).toFixed(1) + 's');
+      c.style.setProperty('--d', (-Math.random() * 30).toFixed(1) + 's');
+      c.style.setProperty('--dx', Math.round(-90 + Math.random() * 180) + 'px');
+      c.style.setProperty('--r', Math.round(-540 + Math.random() * 1080) + 'deg');
+      c.style.setProperty('--cl', LIGHT[i % LIGHT.length]);
+      c.style.setProperty('--cd', DARK[i % DARK.length]);
+      sky.appendChild(c);
+    }
+  })();
   doc.body.appendChild(sky);
+
+  /* แสงวิ่งรอบขอบการ์ด (hero / block / stat) */
+  [].forEach.call(doc.querySelectorAll('.hero,.block,.stat'), function (card, i) {
+    var r = doc.createElement('span');
+    r.className = 'mx-ring';
+    r.setAttribute('aria-hidden', 'true');
+    r.style.setProperty('--mx-rd', (-(i * 1.1) % 5).toFixed(1) + 's');
+    card.appendChild(r);
+  });
 
   function isDark() {
     var t = root.getAttribute('data-theme');
@@ -75,7 +105,7 @@
     // เดินครบ 1 โค้งทุก 12 ชม. (ตี 6 → 18:00 และ 18:00 → 06:00)
     var p = ((bangkokHours() - 6 + 24) % 12) / 12;
     // วงโคจรอยู่ช่วงล่างของจอ (ขอบฟ้า ~86%) เพราะส่วนบนมักถูกการ์ดบังหมด
-    var w = innerWidth, h = innerHeight, size = w < 700 ? 44 : 64;
+    var w = innerWidth, h = innerHeight, size = w < 700 ? 64 : 104;
     var x = 0.06 * w + p * (w * 0.88) - size / 2;
     var y = h * 0.86 - Math.sin(Math.PI * p) * h * 0.34 - size / 2;
     var t = (x).toFixed(0) + 'px ' + y.toFixed(0) + 'px';

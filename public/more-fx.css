@@ -8,7 +8,52 @@
    - เส้นใต้หัวข้อวาดออกตอนเปิดแท็บ
    ปิดอัตโนมัติถ้าผู้ใช้ตั้งค่า "ลดการเคลื่อนไหว"
    ===================================================================== */
+@property --mx-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+
 @media (prefers-reduced-motion:no-preference){
+
+/* ---------- ฉากเปิดหน้า: ประตูสองบานเลื่อนแยก (เล่นครั้งเดียวต่อแท็บเบราว์เซอร์) ---------- */
+html::before,html::after{content:"";position:fixed;top:0;bottom:0;width:50.5vw;z-index:9999;pointer-events:none;
+  background:linear-gradient(var(--accent-soft),transparent 60%),var(--bg,#02080a)}
+html::before{left:0;box-shadow:inset -4px 0 0 var(--accent),0 0 60px var(--glow);animation:mxDoorL 1.2s cubic-bezier(.8,0,.2,1) .5s both}
+html::after{right:0;box-shadow:inset 4px 0 0 var(--accent),0 0 60px var(--glow);animation:mxDoorR 1.2s cubic-bezier(.8,0,.2,1) .5s both}
+html.mx-no-intro::before,html.mx-no-intro::after{display:none}
+@keyframes mxDoorL{0%{translate:0 0}100%{translate:-102% 0;visibility:hidden}}
+@keyframes mxDoorR{0%{translate:0 0}100%{translate:102% 0;visibility:hidden}}
+
+/* ---------- แสงวิ่งรอบขอบการ์ดทุกใบ ---------- */
+.mx-ring{position:absolute;inset:0;padding:2px;pointer-events:none;z-index:3;
+  background:conic-gradient(from var(--mx-a),transparent 0 58%,var(--mx-c,var(--accent)) 82%,#fff 91%,var(--mx-c,var(--accent)) 95%,transparent 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);mask-composite:exclude;
+  animation:mxSpin 5s linear infinite;animation-delay:var(--mx-rd,0s);
+  filter:drop-shadow(0 0 5px var(--mx-c,var(--glow)))}
+.hero>.mx-ring,.block>.mx-ring,.stat>.mx-ring{position:absolute;z-index:3}
+.hero.open{--mx-c:var(--open)}
+.hero.closed{--mx-c:#2fe3d4}
+@keyframes mxSpin{to{--mx-a:360deg}}
+
+/* ---------- การ์ดสถานะ 4 ใบลอยขึ้นลงสลับกัน ---------- */
+.panel.active .stat{animation:fxPop .45s ease-out both,mxFloat 5.4s ease-in-out .7s infinite}
+.panel.active .stat:nth-child(2n){animation-duration:.45s,6.6s}
+.panel.active .stat:nth-child(3n){animation-duration:.45s,7.8s}
+@keyframes mxFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+
+/* ---------- ปุ่มหลักเรืองแสงเต้นเป็นจังหวะ ---------- */
+button.primary{animation:mxBtnGlow 2.2s ease-in-out infinite}
+@keyframes mxBtnGlow{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 12px var(--glow))}}
+
+/* ---------- บล็อกพิกเซลลอยขึ้นทั้งจอ ---------- */
+#mxSky .mx-cube{position:absolute;left:var(--x);top:0;width:var(--s);height:var(--s);opacity:0;
+  background:var(--cl);
+  box-shadow:inset calc(var(--s) * .2) calc(var(--s) * .2) 0 rgba(255,255,255,.38),inset calc(var(--s) * -.2) calc(var(--s) * -.2) 0 rgba(0,0,0,.28);
+  animation:mxCube var(--t) linear var(--d) infinite;will-change:translate,rotate}
+html.mx-night #mxSky .mx-cube{background:var(--cd);filter:drop-shadow(0 0 6px rgba(47,227,212,.6))}
+@keyframes mxCube{
+  0%{translate:0 108vh;rotate:0deg;opacity:0}
+  10%{opacity:.8}
+  90%{opacity:.8}
+  100%{translate:var(--dx) -18vh;rotate:var(--r);opacity:0}}
 
 /* ---------- ดวงอาทิตย์ / พระจันทร์ ---------- */
 #mxSky{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;z-index:-1;pointer-events:none;overflow:hidden}
@@ -49,8 +94,8 @@ html.mx-night #mxSky .mx-moon{opacity:.9}
 @keyframes mxAuA{from{translate:0 0;scale:1}to{translate:26% 14%;scale:1.25}}
 @keyframes mxAuB{from{translate:0 0;scale:1.1}to{translate:-24% 18%;scale:.85}}
 @keyframes mxAuC{from{translate:-10% 0;scale:.9}to{translate:18% -16%;scale:1.2}}
-.hero.open{--mx-blob:rgba(91,229,138,.24)}
-.hero.closed{--mx-blob:rgba(47,227,212,.22)}
+.hero.open{--mx-blob:rgba(91,229,138,.5)}
+.hero.closed{--mx-blob:rgba(47,227,212,.42)}
 
 /* ---------- ตอนกำลังเช็คสถานะ: ข้อความหายใจ ---------- */
 .hero:not(.open):not(.closed) .word,
