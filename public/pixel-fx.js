@@ -25,7 +25,7 @@
   darkNow = calcDark();
   var fadeT = 0;
   function themeWave(toDark) {
-    var lampBox = $('lamp'), r = lampBox ? lampBox.getBoundingClientRect() : null;
+    var lampBox = doc.querySelector('.lamp-wrap'), r = lampBox ? lampBox.getBoundingClientRect() : null;
     var cx = r && r.width ? r.left + r.width / 2 : innerWidth / 2, cy = r && r.width ? r.top + r.height / 2 : innerHeight / 3;
     waveEl.style.left = cx + 'px'; waveEl.style.top = cy + 'px';
     waveEl.className = toDark ? 'dark' : 'light';
@@ -168,16 +168,19 @@
   var FEET_A = ['.ggg..ggg.', '.gdg..gdg.', '.ggg..ggg.', '.ggg......'];
   var FEET_B = ['.ggg..ggg.', '.gdg..gdg.', '.ggg..ggg.', '......ggg.'];
   var PAL = { g: '#5ec43a', d: '#3f9a28', k: '#0b1a08' };
-  // Warden (โหมดมืด/เซิร์ฟปิด): หัวมีหูแหลม แกนกลางอกเรืองแสง k = แสงฟ้า
-  var W_HEAD = ['.g......g.', '.gg....gg.', '.gggggggg.', '.gdggggdg.', '.gggddggg.', '.gdgkkgdg.', '.gggkkggg.', '.gdggggdg.'];
-  var W_BODY = ['..gdggdg..', '.ggdkkdgg.', '..gdkkdg..', '..gggggg..'];
-  var W_PAL = { g: '#1b6a70', d: '#0e3d42', k: '#7dfff2' };
+  // Warden ตามสกิน: หนวดฟ้าบนหัว ไหล่เหลืองอ่อน แกนกลางอกสีฟ้า รองเท้าเขียว (n=ลำตัว e=เขียวอมฟ้า a=ฟ้าเรือง y=เหลือง k=แกน g=เขียว w=เหลืองปลายเท้า)
+  var W_HEAD = ['a..e..e..a', '.aeeddeea.', '..nnnnnn..', '.nnnnnnnn.', '.ndnnnndn.', '.nnnddnnn.', '.nnnnnnnn.', '.nnnnnnnn.'];
+  var W_BODY = ['yynnkknnyy', '.ynnkknny.', '..nnkknn..', '..nnnnnn..'];
+  var W_FEET_A = ['.nnn..nnn.', '.ndn..ndn.', '.ggg..ggg.', '.www......'];
+  var W_FEET_B = ['.nnn..nnn.', '.ndn..ndn.', '.ggg..ggg.', '......www.'];
+  var W_PAL = { n: '#171a2b', d: '#0d1020', e: '#17635f', a: '#5ee6d2', y: '#b3b36a', k: '#2b8fb6', g: '#1a6b50', w: '#d0d07a' };
   var SPR_W = 10, SPR_H = 16;
   var cr = null, nextCr = performance.now() + rnd(3000, 6000);
 
   function drawCreeper(c, t) {
     var wd = isDark(), pal = wd ? W_PAL : PAL;
-    var rows = (wd ? W_HEAD : HEAD).concat(wd ? W_BODY : BODY, (Math.floor(t * 5) % 2) ? FEET_A : FEET_B);
+    var step = (Math.floor(t * 5) % 2);
+    var rows = (wd ? W_HEAD : HEAD).concat(wd ? W_BODY : BODY, wd ? (step ? W_FEET_A : W_FEET_B) : (step ? FEET_A : FEET_B));
     var f = c.scale, bob = (c.state === 'walk' && Math.floor(t * 5) % 2) ? -1 : 0;
     var px = Math.ceil(f), flashOn = c.state === 'fuse' && Math.floor(c.fuseT * 8) % 2 === 0;
     var ox = c.x + SPR_W / 2, oy = c.y + SPR_H + bob; // จุดยึด = กลางเท้า
@@ -185,7 +188,7 @@
       for (var q = 0; q < SPR_W; q++) {
         var ch = rows[r].charAt(q);
         if (ch === '.') continue;
-        fg.fillStyle = flashOn && ch !== 'k' ? (wd ? '#c8fff9' : '#ffffff') : pal[ch];
+        fg.fillStyle = flashOn && ch !== 'k' && ch !== 'a' ? (wd ? '#c8fff9' : '#ffffff') : pal[ch];
         fg.fillRect(Math.round(ox + (q - SPR_W / 2) * f), Math.round(oy - (SPR_H - r) * f), px, px);
       }
     }
