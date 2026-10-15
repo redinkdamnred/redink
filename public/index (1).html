@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>สถานะเซิร์ฟมายคราฟ</title>
+<meta name="description" content="เช็คสถานะเซิร์ฟมายคราฟของกลุ่มเราแบบเรียลไทม์">
+<!--OG-->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%2302171a'/%3E%3Crect x='3' y='3' width='10' height='10' fill='%232fe3d4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<script>try{var m=localStorage.getItem('theme'),t=localStorage.getItem('srvState');if(m==='dark'||m==='light')document.documentElement.setAttribute('data-theme',m);else if(t==='closed'||t==='open')document.documentElement.setAttribute('data-theme',t==='closed'?'dark':'light')}catch(e){}</script>
+<link rel="stylesheet" href="/style.css?v=7">
+<link rel="stylesheet" href="/pixel-fx.css?v=6">
+<link rel="stylesheet" href="/pixel-fx2.css?v=1">
+<script src="/no-zoom.js?v=6"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><rect width="8" height="8" fill="currentColor"/><path d="M1 1h2v2H1zM5 1h2v2H5zM3 3h2v1H3zM2 4h4v2H2zM2 6h1v1H2zM5 6h1v1H5z" fill="#000" fill-opacity=".78"/></svg>
+      <div class="brand-t">
+        <h1 id="srvName">กำลังโหลด…</h1>
+        <div class="state"><i class="dot" id="dot"></i><span id="stateTxt">กำลังเช็ค…</span></div>
+      </div>
+    </div>
+    <nav class="nav" aria-label="หมวดข้อมูล">
+      <button type="button" class="nv" data-h="overview" data-target="p-overview" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>ภาพรวม</span></button>
+      <button type="button" class="nv" data-h="addr" data-target="p-addr"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg><span>ที่อยู่เซิร์ฟเวอร์</span></button>
+      <button type="button" class="nv" data-h="players" data-target="p-players"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14c2.5 0 4 2 4 5"/></svg><span>กำลังเล่นอยู่</span><b class="badge" id="navPl"></b></button>
+      <button type="button" class="nv" data-h="chat" data-target="chatBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>แชทกลุ่ม</span></button>
+      <button type="button" class="nv" data-h="rank" data-target="rankBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4"/><path d="M12 13v4M8 21h8M10 17h4"/></svg><span>อันดับผู้เล่น</span></button>
+      <button type="button" class="nv" data-h="chart" data-target="p-chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg><span>จำนวนผู้เล่น</span></button>
+      <button type="button" class="nv" data-h="history" data-target="p-history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>ประวัติสถานะ</span></button>
+      <button type="button" class="nv" data-h="sched" data-target="schedBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>ช่วงเวลาที่มักเปิด</span></button>
+    </nav>
+    <div class="side-foot"><button id="theme" type="button">Creeper Mode</button></div>
+  </aside>
+
+  <main class="main" id="main">
+  <div class="notice" id="notice" role="status" hidden></div>
+
+  <div class="panel active" id="p-overview">
+    <header class="hero" id="hero">
+      <div class="lamp-wrap" aria-hidden="true">
+        <div class="lamp" id="lamp"></div>
+        <div class="zzz">
+          <svg viewBox="0 0 5 5" shape-rendering="crispEdges"><path d="M0 0h5v1H0zM3 1h1v1H3zM2 2h1v1H2zM1 3h1v1H1zM0 4h5v1H0z"/></svg>
+          <svg viewBox="0 0 5 5" shape-rendering="crispEdges"><path d="M0 0h5v1H0zM3 1h1v1H3zM2 2h1v1H2zM1 3h1v1H1zM0 4h5v1H0z"/></svg>
+          <svg viewBox="0 0 5 5" shape-rendering="crispEdges"><path d="M0 0h5v1H0zM3 1h1v1H3zM2 2h1v1H2zM1 3h1v1H1zM0 4h5v1H0z"/></svg>
+        </div>
+      </div>
+      <div>
+        <div class="word" id="word">กำลังเช็ค…</div>
+        <div class="sub" id="sub"></div>
+      </div>
+      <div class="motd" id="motd"></div>
+      <div class="actions" id="actions"></div>
+    </header>
+    <div class="stats">
+      <div class="stat"><div class="k">ผู้เล่น</div><div class="v" id="stPlayers">–</div></div>
+      <div class="stat"><div class="k">เวอร์ชัน</div><div class="v" id="stVer">–</div></div>
+      <div class="stat"><div class="k">Ping</div><div class="v" id="stPing">–</div></div>
+      <div class="stat"><div class="k">ออนไลน์ 24 ชม.</div><div class="v" id="stUp">–</div></div>
+    </div>
+  </div>
+
+  <section class="block panel" id="p-addr" aria-labelledby="h-addr">
+    <h2 id="h-addr">ที่อยู่เซิร์ฟเวอร์</h2>
+    <div class="addr">
+      <code id="addr">–</code>
+      <button id="copy" type="button" class="primary">คัดลอก</button>
+    </div>
+  </section>
+
+  <section class="block panel" id="p-players" aria-labelledby="h-pl">
+    <h2 id="h-pl">กำลังเล่นอยู่</h2>
+    <div class="chips" id="players"><span class="empty">–</span></div>
+  </section>
+  <section class="block panel" id="chatBox" aria-labelledby="h-chat" hidden>
+    <div class="chat-head">
+      <h2 id="h-chat">แชทกลุ่ม</h2>
+      <span class="small muted" id="chatStat"></span>
+    </div>
+    <div id="chatGate" hidden>
+      <p class="small muted" style="margin-bottom:8px">ใส่รหัสผ่านของกลุ่มเพื่อเข้าแชท</p>
+      <form id="chatJoin" class="chat-form">
+        <input class="field chat-text" id="chatPw" type="password" autocomplete="off" placeholder="รหัสผ่านกลุ่ม" aria-label="รหัสผ่านแชท" required>
+        <button type="submit">เข้าแชท</button>
+      </form>
+      <p class="small muted" id="chatJoinNote" role="status" style="margin-top:6px"></p>
+    </div>
+    <div id="chatMain" hidden>
+      <div class="chat-log" id="chatLog" role="log" aria-live="polite" aria-label="ข้อความแชท" tabindex="0"></div>
+      <form id="chatForm" class="chat-form" autocomplete="off">
+        <input class="field chat-name" id="chatName" maxlength="20" placeholder="ชื่อของคุณ" aria-label="ชื่อที่แสดงในแชท" required>
+        <input class="field chat-text" id="chatText" maxlength="300" placeholder="พิมพ์ข้อความ" aria-label="ข้อความ" required>
+        <button type="submit" id="chatSend">ส่ง</button>
+      </form>
+      <p class="small muted" id="chatNote" role="status" style="margin-top:6px"></p>
+    </div>
+  </section>
+
+  <section class="block panel" id="rankBox" aria-labelledby="h-rank" hidden>
+    <div class="chat-head">
+      <h2 id="h-rank">อันดับผู้เล่น</h2>
+      <span class="small muted" id="rankStat"></span>
+    </div>
+    <div class="tabs" role="group" aria-label="หมวดอันดับ">
+      <button type="button" data-k="blocks" aria-pressed="true">ขุดบล็อกรวม</button>
+      <button type="button" data-k="ores" aria-pressed="false">ขุดแร่</button>
+      <button type="button" data-k="mobs" aria-pressed="false">ฆ่ามอนสเตอร์</button>
+      <button type="button" data-k="hours" aria-pressed="false">เวลาเล่น</button>
+      <button type="button" data-k="deaths" aria-pressed="false">ตายมากสุด</button>
+      <button type="button" data-k="dist" aria-pressed="false">เดินทางไกลสุด</button>
+    </div>
+    <ol class="rank" id="rankList"></ol>
+  </section>
+
+  <section class="block panel" id="p-chart" aria-labelledby="h-cnt">
+    <h2 id="h-cnt">จำนวนผู้เล่น 24 ชั่วโมงที่ผ่านมา</h2>
+    <div class="bars" id="bars" role="img" aria-label="กราฟจำนวนผู้เล่นสูงสุดในแต่ละครึ่งชั่วโมง"></div>
+    <div class="strip-legend small muted"><span>24 ชม.ก่อน</span><span>ตอนนี้</span></div>
+    <p class="small muted" id="peakText" style="margin-top:6px"></p>
+  </section>
+
+  <section class="block panel" id="p-history" aria-labelledby="h-hist">
+    <h2 id="h-hist">ประวัติสถานะ 24 ชั่วโมงที่ผ่านมา</h2>
+    <div class="strip" id="strip" role="img" aria-label="กราฟสถานะย้อนหลัง 24 ชั่วโมง"></div>
+    <div class="strip-legend small muted"><span>24 ชม.ก่อน</span><span>ตอนนี้</span></div>
+    <p class="small muted" style="margin-top:6px">เขียว = เปิด · เหลือง = เปิดบางช่วง · แดง = ปิด · เทา = ยังไม่มีข้อมูล</p>
+  </section>
+
+  <section class="block panel" aria-labelledby="h-sched" id="schedBox" hidden>
+    <h2 id="h-sched">ช่วงเวลาที่มักเปิด</h2>
+    <ul class="sched" id="sched"></ul>
+    <p class="small muted" style="margin-top:8px">เวลาไทย แต่ละวันอาจเปลี่ยนได้ ดูสถานะจริงด้านบนเป็นหลัก</p>
+  </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id)};
+  var DAYS=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  var cfg=null, st=null, dc=null, prevOnline=null, toastT;
+
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v)}catch(e){return null}}
+  function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show')},2500)}
+  function ago(ts){
+    var s=Math.max(0,Math.floor((Date.now()-ts)/1000));
+    if(s<60)return s+' วินาที';
+    if(s<3600)return Math.floor(s/60)+' นาที';
+    if(s<86400)return Math.floor(s/3600)+' ชม. '+Math.floor((s%3600)/60)+' นาที';
+    return Math.floor(s/86400)+' วัน '+Math.floor((s%86400)/3600)+' ชม.';
+  }
+  function el(tag,attrs,text){var e=document.createElement(tag);if(attrs)for(var k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;return e}
+  function hhmm(ts){return new Date(ts).toLocaleTimeString('th-TH',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'})}
+
+  /* ---------- ธีม: ตามสถานะเซิร์ฟอัตโนมัติ (เปิด = Creeper สว่าง / ปิด = Warden มืด) + ปุ่มสลับเองได้ ---------- */
+  var rootEl=document.documentElement;
+  function effectiveTheme(){
+    var t=rootEl.getAttribute('data-theme');
+    if(t==='dark'||t==='light')return t;
+    return window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  }
+  function themeLabel(){$('theme').textContent=effectiveTheme()==='dark'?'Creeper Mode':'Warden Mode'}
+  function setTheme(n){rootEl.setAttribute('data-theme',n);themeLabel()}
+  $('theme').addEventListener('click',function(){
+    var n=effectiveTheme()==='dark'?'light':'dark';
+    setTheme(n);store('theme',n);
+  });
+  function applyTheme(online){
+    if(online!==true&&online!==false)return;
+    var s=online?'open':'closed', auto=online?'light':'dark';
+    if(store('srvState')!==s){            // สถานะเซิร์ฟเปลี่ยนจริง: ล้างตัวเลือกเอง แล้วสลับธีมตามสถานะ
+      store('srvState',s);store('theme',null);setTheme(auto);
+    }else if(!store('theme')&&rootEl.getAttribute('data-theme')!==auto)setTheme(auto);
+    else themeLabel();
+  }
+  themeLabel();
+
+  /* ---------- แถบซ้าย: สลับหน้าข้อมูล ---------- */
+  var navBtns=[].slice.call(document.querySelectorAll('.nv'));
+  var current='p-overview', wanted=null;
+  (function(){var h=(location.hash||'').slice(1);navBtns.forEach(function(b){if(b.getAttribute('data-h')===h)wanted=b.getAttribute('data-target')})})();
+  function shown(id){var e=$(id);return !!e&&!e.hidden}
+  function showPanel(id,fromUser){
+    if(!shown(id))id='p-overview';
+    current=id;if(fromUser)wanted=null;
+    navBtns.forEach(function(b){
+      var on=b.getAttribute('data-target')===id;
+      if(on){b.setAttribute('aria-current','page');try{b.scrollIntoView({block:'nearest',inline:'center'})}catch(e){}}
+      else b.removeAttribute('aria-current');
+      if(on&&fromUser){try{history.replaceState(null,'','#'+b.getAttribute('data-h'))}catch(e){}}
+    });
+    [].forEach.call(document.querySelectorAll('.panel'),function(p){p.classList.toggle('active',p.id===id)});
+    if(id==='chatBox'){var lg=$('chatLog');if(lg)lg.scrollTop=lg.scrollHeight}
+    if(fromUser)window.scrollTo(0,0);
+  }
+  function syncNav(){
+    navBtns.forEach(function(b){b.hidden=!shown(b.getAttribute('data-target'))});
+    if(wanted&&shown(wanted))showPanel(wanted,false);
+    else if(!shown(current))showPanel('p-overview',false);
+  }
+  navBtns.forEach(function(b){b.addEventListener('click',function(){showPanel(b.getAttribute('data-target'),true)})});
+  ['chatBox','rankBox','schedBox'].forEach(function(id){
+    new MutationObserver(syncNav).observe($(id),{attributes:true,attributeFilter:['hidden']});
+  });
+  syncNav();
+
+  /* ---------- แจ้งเตือนในเบราว์เซอร์ตอนเซิร์ฟเปิด ---------- */
+  var canNotify='Notification' in window;
+  function notifyWanted(){return store('notifyOpen')==='1'}
+  function toggleNotify(){
+    if(!canNotify){toast('เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน');return}
+    if(notifyWanted()){store('notifyOpen',null);render();return}
+    if(Notification.permission==='denied'){toast('การแจ้งเตือนถูกบล็อกไว้ ไปเปิดในตั้งค่าเว็บไซต์ของเบราว์เซอร์');return}
+    var called=false;
+    function done(p){
+      if(called)return;called=true;
+      if(p==='granted'){store('notifyOpen','1');toast('จะแจ้งเตือนเมื่อเซิร์ฟเปิด (ต้องเปิดหน้านี้ค้างไว้)')}
+      else toast('ไม่ได้อนุญาตการแจ้งเตือน');
+      render();
+    }
+    try{
+      var r=Notification.requestPermission(done);
+      if(r&&r.then)r.then(done);
+    }catch(e){toast('เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน')}
+  }
+  function fireOpenNotification(){
+    if(!canNotify||!notifyWanted()||Notification.permission!=='granted')return;
+    store('notifyOpen',null);
+    try{new Notification((cfg?cfg.name:'เซิร์ฟมายคราฟ')+' เปิดแล้ว!',{body:'เข้ามาเล่นกันได้เลย'+(cfg&&cfg.address?' · '+cfg.address:'')})}catch(e){}
+  }
+
+  /* ---------- วาดหน้า ---------- */
+  function lamp(on){
+    var l=$('lamp');
+    if(!l.children.length)for(var i=0;i<64;i++)l.appendChild(el('i'));
+    var face=[9,10,13,14,17,18,21,22,27,28,34,35,36,37,42,43,44,45,50,53];
+    var known=on===true||on===false;
+    for(var j=0;j<64;j++)l.children[j].className=known&&face.indexOf(j)>-1?'on':'';
+  }
+
+  /* หน้า Warden พิกเซล (แสดงตอนเซิร์ฟปิด) ครึ่งซ้าย 16 คอลัมน์ x 14 แถว แล้วสะท้อนเป็นครึ่งขวา */
+  var WART=[
+    '.C.......TTtTTTT',
+    'TTc......TtTTTtT',
+    'TTTt.....BbBBbBB',
+    'tTTB.....bBBbNBb',
+    'TTBBb....BbNbBNb',
+    'tTBBBbb..NnNbNnN',
+    '..cBBBBbbNnNGGGL',
+    '..C..bBbbNnGNNNL',
+    '.c.......NNnNnNN',
+    '.C.......NnNNNnN',
+    '.........nNNNnNN',
+    '.........NnNNNLL',
+    '.........nNGGNNN',
+    '.........nnNNNnn'];
+  var WCOL={T:'#1b7a70',t:'#0f5a5a',B:'#2e4a8e',b:'#213766',N:'#14233f',n:'#0f1a33',G:'#3f6b72',C:'#6ef0ff',c:'#5ab4d8',L:'#8feaff'};
+  (function(){
+    var wrap=document.querySelector('.lamp-wrap');if(!wrap)return;
+    var NS='http://www.w3.org/2000/svg',svg=document.createElementNS(NS,'svg');
+    svg.setAttribute('viewBox','0 0 32 14');svg.setAttribute('class','warden');svg.setAttribute('shape-rendering','crispEdges');
+    WART.forEach(function(row,y){
+      var full=row+row.split('').reverse().join('');
+      for(var x=0;x<32;x++){
+        var ch=full.charAt(x);if(ch==='.')continue;
+        var r=document.createElementNS(NS,'rect');
+        r.setAttribute('x',x);r.setAttribute('y',y);r.setAttribute('width','1.02');r.setAttribute('height','1.02');r.setAttribute('fill',WCOL[ch]);
+        if(ch==='L')r.setAttribute('class','gl');
+        else if(ch==='C'||ch==='c')r.setAttribute('class','tip');
+        svg.appendChild(r);
+      }
+    });
+    wrap.appendChild(svg);
+  })();
+
+  function chip(name){
+    var c=el('span',{class:'chip has-head'});
+    var img=el('img',{src:'https://mc-heads.net/avatar/'+encodeURIComponent(name)+'/24',width:'24',height:'24',alt:'',loading:'lazy',referrerpolicy:'no-referrer'});
+    img.addEventListener('error',function(){c.className='chip';if(img.parentNode)img.parentNode.removeChild(img)});
+    c.appendChild(img);
+    c.appendChild(el('span',null,name));
+    return c;
+  }
+
+  function renderBars(){
+    var bars=$('bars');bars.textContent='';
+    var slots=st.uptime?st.uptime.slots:[];
+    var max=1;
+    slots.forEach(function(s){if(s.m!=null&&s.m>max)max=s.m});
+    slots.forEach(function(s){
+      var i=el('i');
+      if(s.m==null){i.className='none';i.style.height='2px';i.title=hhmm(s.t)+' น. – เซิร์ฟปิด/ไม่มีข้อมูล'}
+      else if(s.m===0){i.className='zero';i.style.height='2px';i.title=hhmm(s.t)+' น. – ไม่มีผู้เล่น'}
+      else{i.style.height=Math.max(4,Math.round(s.m/max*100))+'%';i.title=hhmm(s.t)+' น. – สูงสุด '+s.m+' คน'}
+      bars.appendChild(i);
+    });
+    var t=[];
+    var p24=st.uptime&&st.uptime.peak24;
+    t.push('สูงสุดใน 24 ชม.: '+(p24||0)+' คน');
+    if(st.peak)t.push('สูงสุดตลอดกาล: '+st.peak.n+' คน ('+new Date(st.peak.t).toLocaleDateString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',year:'2-digit'})+')');
+    $('peakText').textContent=t.join(' · ');
+  }
+
+  function render(){
+    if(!st)return;
+    var hero=$('hero');
+    hero.className='hero '+(st.online===true?'open':st.online===false?'closed':'');
+    lamp(st.online);
+    applyTheme(st.online);
+    $('dot').className='dot '+(st.online===true?'open':st.online===false?'closed':'');
+    $('stateTxt').textContent=st.online===true?'เปิดอยู่':st.online===false?'ปิดอยู่':'กำลังเช็ค…';
+    $('navPl').textContent=st.online===true&&st.players?String(st.players.online):'';
+    $('word').textContent=st.online===true?'เปิดอยู่!':st.online===false?'ปิดอยู่':'กำลังเช็ค…';
+    var sub='';
+    if(st.online===true)sub='เปิดมาแล้ว '+ago(st.since);
+    else if(st.online===false)sub='ปิดมาแล้ว '+ago(st.since);
+    if(st.lastChecked)sub+=(sub?' · ':'')+'เช็คล่าสุด '+ago(st.lastChecked)+'ที่แล้ว';
+    $('sub').textContent=sub;
+    $('motd').textContent=st.online===true?(st.motd||''):'';
+
+    var a=$('actions');a.textContent='';
+    if(st.online===false&&cfg&&cfg.canRequest){
+      var b=el('button',{type:'button','class':'primary'},'ขอให้เปิดเซิร์ฟ');
+      b.addEventListener('click',requestOpen);
+      a.appendChild(b);
+      if(st.requests)a.appendChild(el('span',null,st.requests+' คนอยากให้เปิด'));
+    }
+    if(st.online!==true&&canNotify){
+      var on=notifyWanted()&&Notification.permission==='granted';
+      var nb=el('button',{type:'button','aria-pressed':on?'true':'false'},on?'ยกเลิกแจ้งเตือนเมื่อเปิด':'แจ้งเตือนเมื่อเซิร์ฟเปิด');
+      nb.addEventListener('click',toggleNotify);
+      a.appendChild(nb);
+      if(on)a.appendChild(el('span',{class:'small hint'},'จะแจ้งเตือนครั้งเดียวตอนเซิร์ฟเปิด ต้องเปิดหน้านี้ค้างไว้ในเบราว์เซอร์'));
+    }
+    if(cfg&&cfg.invite){
+      var d=el('a',{class:'btn discord',href:cfg.invite,target:'_blank',rel:'noopener'},'เข้า Discord ของกลุ่ม');
+      if(dc&&dc.online!=null)d.appendChild(el('span',{class:'dc-count'},'· ออนไลน์ '+dc.online+' คน'));
+      a.appendChild(d);
+    }
+
+    var isOn=st.online===true;
+    $('stPlayers').textContent=isOn?(st.players.online+' / '+st.players.max):'–';
+    $('stVer').textContent=isOn&&st.version?st.version:'–';
+    $('stPing').textContent=isOn&&st.latency!=null?(st.latency+' ms'):'–';
+    $('stUp').textContent=st.uptime&&st.uptime.pct!=null?(st.uptime.pct+'%'):'–';
+
+    var pl=$('players');pl.textContent='';
+    if(!isOn)pl.appendChild(el('span',{class:'empty'},'เซิร์ฟปิดอยู่'));
+    else{
+      var names=st.players.names||[];
+      names.forEach(function(n){pl.appendChild(chip(n))});
+      var rest=st.players.online-names.length;
+      if(!names.length&&st.players.online===0)pl.appendChild(el('span',{class:'empty'},'ยังไม่มีใครในเซิร์ฟ'));
+      else if(rest>0)pl.appendChild(el('span',{class:'empty'},(names.length?'และอีก ':'มีผู้เล่น ')+rest+' คน'+(names.length?'':' (เซิร์ฟไม่ส่งรายชื่อ)')));
+    }
+
+    renderBars();
+
+    var strip=$('strip');strip.textContent='';
+    (st.uptime?st.uptime.slots:[]).forEach(function(s){
+      var c=s.r==null?'':s.r>=0.95?'up':s.r<=0.05?'down':'part';
+      var i=el('i',{class:c});
+      i.title=hhmm(s.t)+' น. – '+(s.r==null?'ไม่มีข้อมูล':Math.round(s.r*100)+'% ออนไลน์');
+      strip.appendChild(i);
+    });
+  }
+
+  function renderStatic(){
+    if(!cfg)return;
+    $('srvName').textContent=cfg.name;
+    document.title=cfg.name+' · สถานะเซิร์ฟ';
+    $('addr').textContent=cfg.address;
+    var n=$('notice');
+    if(cfg.announcement){n.textContent=cfg.announcement;n.hidden=false}else{n.textContent='';n.hidden=true}
+    var days=(cfg.schedule&&cfg.schedule.days)||{};
+    var keys=Object.keys(days);
+    $('schedBox').hidden=!keys.length;
+    var today=DAYS[new Date(Date.now()+7*3600000).getUTCDay()];
+    var ul=$('sched');ul.textContent='';
+    keys.forEach(function(d){
+      var li=el('li',{class:d===today?'today':''});
+      li.appendChild(el('span',null,'วัน'+d+(d===today?' (วันนี้)':'')));
+      li.appendChild(el('span',null,days[d]));
+      ul.appendChild(li);
+    });
+  }
+
+  function load(){
+    fetch('/api/status',{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){
+      if(prevOnline===false&&j.online===true)fireOpenNotification();
+      prevOnline=j.online;
+      st=j;render();
+    }).catch(function(){
+      $('word').textContent='เชื่อมต่อเว็บไม่ได้';$('sub').textContent='ลองรีเฟรชอีกครั้ง';
+    });
+  }
+  function loadConfig(){
+    fetch('/api/config',{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){cfg=j;renderStatic();render()}).catch(function(){});
+  }
+  function loadDiscord(){
+    fetch('/api/discord',{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){dc=j;render()}).catch(function(){});
+  }
+  function requestOpen(){
+    fetch('/api/request-open',{method:'POST'}).then(function(r){return r.json()}).then(function(j){
+      toast(j.ok?'ส่งคำขอไปที่ Discord แล้ว':(j.message||'ส่งไม่สำเร็จ'));
+      load();
+    }).catch(function(){toast('ส่งไม่สำเร็จ ลองใหม่อีกครั้ง')});
+  }
+  $('copy').addEventListener('click',function(){
+    var t=cfg&&cfg.address;if(!t)return;
+    function fb(){try{var r=document.createRange();r.selectNodeContents($('addr'));var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');toast('คัดลอกแล้ว')}catch(e){toast('แตะค้างที่ที่อยู่เพื่อคัดลอก')}}
+    try{navigator.clipboard.writeText(t).then(function(){toast('คัดลอกแล้ว')},fb)}catch(e){fb()}
+  });
+
+  loadConfig();
+  loadDiscord();
+  load();
+  setInterval(load,15000);
+  setInterval(loadConfig,60000);
+  setInterval(loadDiscord,120000);
+  setInterval(render,1000*20);
+})();
+</script>
+<script src="/chat-client.js?v=6" defer></script>
+<script src="/ranking-client.js?v=9" defer></script>
+<script src="/pixel-fx.js?v=6" defer></script>
+<script src="/pixel-fx2.js?v=1" defer></script>
+</body>
+</html>
