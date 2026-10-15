@@ -1,0 +1,217 @@
+/* =====================================================================
+   PIXEL FX — อนิเมชั่นสไตล์เกมพิกเซล (วางทับ style.css โดยไม่แก้ไฟล์เดิม)
+   เอฟเฟกต์เปิดตลอดเวลา ไม่มีปุ่มปิด
+   ===================================================================== */
+
+:root{
+  --font-pixel:'Press Start 2P','Chakra Petch',monospace;
+  --px:4px;                       /* ขนาด "พิกเซล" ของเอฟเฟกต์ */
+  --hard:rgba(0,0,0,.5);          /* เงาแข็งแบบเกม 8-bit */
+}
+:root[data-theme="light"]{ --hard:rgba(20,60,10,.35) }
+@media (prefers-color-scheme:light){ :root:not([data-theme="dark"]){ --hard:rgba(20,60,10,.35) } }
+
+/* ---------- เลเยอร์ canvas ---------- */
+#fxBg,#fxFg{will-change:transform;transform:translateZ(0);position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;pointer-events:none;image-rendering:pixelated;image-rendering:crisp-edges}
+#fxBg{z-index:-1;opacity:.9}
+#fxFg{z-index:40}
+#fxScan{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:.3;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 4px)}
+#fxScan::after{content:"";position:absolute;left:0;right:0;height:18vh;top:0;will-change:transform;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.03),transparent);
+  animation:fxRoll 9s linear infinite}
+@keyframes fxRoll{from{transform:translateY(-20vh)}to{transform:translateY(110vh)}}
+
+/* ---------- การ์ด / กรอบ: เหลี่ยม + เงาแข็ง ---------- */
+.block,.stat,.hero,.notice,.chip,.addr code,.sched li,.chat-log,.field,.bars,.strip,.rank .rk,.rank img,.chip img{border-radius:0!important}
+.block,.stat,.hero{
+  box-shadow:calc(var(--px)) calc(var(--px)) 0 var(--hard),
+             inset 0 0 0 2px var(--line),
+             inset 0 1px 0 rgba(255,255,255,.06)!important;
+}
+.block::before,.stat::before{ /* มุมสี่เหลี่ยมเล็กๆ ตกแต่ง (อยู่ในกรอบ ไม่ล้นออกนอกการ์ด) */
+  content:"";position:absolute;left:0;top:0;width:8px;height:8px;background:var(--accent);
+  pointer-events:none;z-index:2;animation:fxCorner 2.4s steps(1) infinite}
+.stat{position:relative}
+.stat::before{left:0;top:0}
+@keyframes fxCorner{0%{background:var(--accent)}50%{background:var(--bar-c)}}
+.block>*,.stat>*{position:relative;z-index:1}
+
+/* ---------- ปุ่มแบบเกม (กดแล้วจมลง) ---------- */
+button,.btn{
+  border-radius:0!important;
+  box-shadow:0 4px 0 var(--hard),inset 0 0 0 2px rgba(255,255,255,.07)!important;
+  transition:transform .08s ease-out,box-shadow .08s ease-out!important;
+  position:relative}
+button:hover,.btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--hard),0 0 0 3px var(--accent-soft)!important}
+button:active,.btn:active{transform:translateY(4px)!important;box-shadow:0 0 0 var(--hard)!important}
+button.primary,button[type="submit"],.hero .actions button[aria-pressed="true"],.tabs button[aria-pressed="true"]{
+  box-shadow:0 4px 0 var(--hard),0 0 20px var(--glow)!important}
+.nav .nv{box-shadow:none!important;transform:none!important}
+.nav .nv:hover svg{animation:fxHop .4s steps(3) 1}
+.nav .nv[aria-current="page"]{box-shadow:inset 0 0 0 2px var(--line)!important}
+.nav .nv[aria-current="page"]::before{animation:fxBlink 1s steps(1) infinite}
+.tabs button{border-radius:0!important}
+@keyframes fxBlink{50%{opacity:.25}}
+@keyframes fxHop{0%,100%{transform:translateY(0)}40%{transform:translateY(-4px)}}
+
+/* ---------- ฟอนต์พิกเซลสำหรับตัวเลข/ตัวอักษรอังกฤษ ---------- */
+.stat .v{font-family:var(--font-pixel);font-size:1.35rem;line-height:1.7;letter-spacing:.02em;
+  text-shadow:2px 2px 0 var(--hard);color:var(--head);white-space:nowrap;overflow:hidden;text-overflow:clip}
+.stat .k{letter-spacing:.02em}
+.word{text-shadow:4px 4px 0 var(--hard)}
+.hero.open .word{text-shadow:4px 4px 0 var(--hard),0 0 24px var(--open-soft)}
+h2{text-shadow:2px 2px 0 var(--hard)}
+/* ตัวเลขข้างเมนู: ป้ายเรียบ อยู่ติดขอบขวาของปุ่ม ไม่มีเงาลอย */
+.nv .badge{font-family:var(--font-pixel);font-size:.6rem;line-height:22px;height:22px;min-width:24px;padding:0 6px;
+  border-radius:0;box-shadow:none;flex:none;margin-left:auto;align-self:center;letter-spacing:0}
+.rank .rv,.dc-count{font-family:var(--font-pixel);font-size:.78rem}
+.addr code{font-family:var(--font-pixel);font-size:.9rem;line-height:1.8;letter-spacing:.03em}
+
+/* ---------- เคอร์เซอร์พิมพ์ดีด ---------- */
+.word.fx-typing::after{content:"";display:inline-block;width:.45em;height:.8em;margin-left:.12em;vertical-align:-.05em;
+  background:currentColor;animation:fxBlink .5s steps(1) infinite}
+
+/* ---------- โลโก้ / จุดสถานะ / หัวข้อ ---------- */
+.logo{animation:fxLogo 2.6s ease-in-out infinite;image-rendering:pixelated}
+@keyframes fxLogo{0%{transform:translateY(0)}50%{transform:translateY(-2px) rotate(-3deg)}75%{transform:translateY(0) rotate(2deg)}}
+.dot{animation:fxBlink 1.2s steps(1) infinite}
+.dot.open{animation:fxBlink 1.2s steps(1) infinite}
+h2::before{animation:fxSq 1.6s steps(1) infinite}
+@keyframes fxSq{0%{transform:scale(1)}25%{transform:scale(1.35) rotate(45deg)}50%{transform:scale(1) rotate(90deg)}75%{transform:scale(.7) rotate(135deg)}}
+#theme::before{animation:fxSq 2s steps(1) infinite}
+
+/* ---------- ไฟสถานะ (หน้าครีปเปอร์): กระโดด / กระพริบตา / สั่น ---------- */
+.lamp{image-rendering:pixelated}
+.hero.open .lamp{animation:pulse 4.5s ease-in-out infinite,fxLampHop 3.2s ease-in-out infinite}
+@keyframes fxLampHop{
+  0%,60%,100%{transform:translateY(0)}
+  64%{transform:translateY(-14px)} 70%{transform:translateY(-20px)}
+  76%{transform:translateY(-14px)} 82%{transform:translateY(0)}
+  86%{transform:translateY(-5px)} 90%{transform:translateY(0)}}
+.hero.closed .lamp{animation:fxShake 3.4s steps(1) infinite;filter:saturate(.7)}
+@keyframes fxShake{
+  0%,70%,100%{transform:translate(0,0)}
+  72%{transform:translate(-3px,1px)} 74%{transform:translate(3px,-1px)}
+  76%{transform:translate(-3px,0)} 78%{transform:translate(2px,1px)} 80%{transform:translate(0,0)}}
+/* กะพริบตา: ซ่อนตาทั้ง 2 แถว (ช่อง 9,10,13,14,17,18,21,22 = nth-child +1) */
+.lamp.blink i.on:nth-child(10),.lamp.blink i.on:nth-child(11),
+.lamp.blink i.on:nth-child(14),.lamp.blink i.on:nth-child(15),
+.lamp.blink i.on:nth-child(18),.lamp.blink i.on:nth-child(19),
+.lamp.blink i.on:nth-child(22),.lamp.blink i.on:nth-child(23){background:transparent}
+.hero::after{will-change:transform;animation:fxMob 5s ease-in-out infinite}
+@keyframes fxMob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* ---------- เข้าฉากเมื่อเปลี่ยนแท็บ ---------- */
+.panel.active{animation:fxPanel .4s ease-out both}
+@keyframes fxPanel{
+  0%{opacity:0;transform:translateY(16px) scale(.985)}
+  60%{opacity:1}
+  100%{opacity:1;transform:none}}
+.panel.active .stat{animation:fxPop .45s ease-out both}
+.panel.active .stat:nth-child(2){animation-delay:.08s}
+.panel.active .stat:nth-child(3){animation-delay:.16s}
+.panel.active .stat:nth-child(4){animation-delay:.24s}
+@keyframes fxPop{0%{opacity:0;transform:scale(.6)}70%{opacity:1;transform:scale(1.07)}100%{opacity:1;transform:scale(1)}}
+.hero{animation:fxPop .5s ease-out both}
+.panel.active .addr code{animation:fxScanIn .6s steps(10) both}
+@keyframes fxScanIn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+/* ---------- แถบกราฟ: โตขึ้นทีละขั้น (เล่นครั้งเดียวต่อการเปิดแท็บ) ---------- */
+.fx-grow>i{transform-origin:50% 100%;animation:fxGrow .6s ease-out both;animation-delay:calc(var(--d,0) * 1ms)}
+@keyframes fxGrow{from{transform:scaleY(0);opacity:.2}to{transform:scaleY(1);opacity:1}}
+.fx-sweep>i{animation:fxSweep .4s ease-out both;animation-delay:calc(var(--d,0) * 1ms)}
+@keyframes fxSweep{from{opacity:0;transform:scale(.2)}60%{transform:scale(1.25)}to{opacity:1;transform:scale(1)}}
+.bars i{border-radius:0!important;box-shadow:inset 0 3px 0 rgba(255,255,255,.35),inset -2px 0 0 rgba(0,0,0,.2),0 0 6px var(--glow)!important}
+.bars i.zero,.bars i.none{box-shadow:none!important}
+.strip i{border-radius:0!important}
+.strip:not(.fx-sweep) i.up{animation:fxLive 2.4s steps(1) infinite;animation-delay:calc(var(--d,0) * 0.5ms)}
+@keyframes fxLive{0%,92%{opacity:1}96%{opacity:.7}}
+
+/* ---------- ผู้เล่น: หัวสกินเด้งหายใจ + โผล่ทีละคน ---------- */
+.fx-pop>.chip{animation:fxPop .4s ease-out both;animation-delay:calc(var(--d,0) * 1ms)}
+.chip img{animation:fxBob 1.6s ease-in-out infinite;animation-delay:calc(var(--i,0) * -230ms)}
+@keyframes fxBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.chip:hover img{animation:fxHop .3s steps(3) infinite}
+.chip{box-shadow:3px 3px 0 var(--hard)}
+
+/* ---------- แชท / อันดับ ---------- */
+.msg{animation:fxMsg .3s ease-out both}
+@keyframes fxMsg{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.msg .sw{animation:fxSq 1.8s steps(1) infinite}
+.rank li{animation:fxMsg .35s ease-out both}
+.rank li:nth-child(2){animation-delay:.05s}.rank li:nth-child(3){animation-delay:.1s}
+.rank li:nth-child(4){animation-delay:.15s}.rank li:nth-child(5){animation-delay:.2s}
+.rank li:nth-child(n+6){animation-delay:.25s}
+.rank li:nth-child(1) .rk{animation:fxLive 1.8s steps(1) infinite}
+.sched li.today{animation:fxBlinkBorder 1.4s steps(1) infinite}
+@keyframes fxBlinkBorder{50%{border-color:var(--bar-c)}}
+.notice{animation:fxBlinkNote 1.6s steps(1) infinite;box-shadow:4px 4px 0 var(--hard)}
+@keyframes fxBlinkNote{50%{border-left-color:var(--accent)}}
+
+/* ---------- toast สไตล์เกม ---------- */
+.toast{border-radius:0!important;font-family:var(--font-body);box-shadow:4px 4px 0 var(--hard),0 0 20px var(--glow)!important;
+  transition:opacity .15s ease-out,transform .2s ease-out!important}
+
+/* ---------- แผ่นสั่นตอนครีปเปอร์ระเบิด ---------- */
+.fx-quake .app{animation:fxQuake .5s steps(1) 1}
+@keyframes fxQuake{
+  0%{transform:translate(0,0)} 10%{transform:translate(-8px,4px)} 20%{transform:translate(7px,-5px)}
+  30%{transform:translate(-6px,-3px)} 40%{transform:translate(5px,4px)} 55%{transform:translate(-3px,2px)}
+  70%{transform:translate(2px,-2px)} 85%{transform:translate(-1px,1px)} 100%{transform:translate(0,0)}}
+#fxFlash{position:fixed;inset:0;z-index:44;pointer-events:none;background:#fff;opacity:0}
+#fxFlash.go{animation:fxFlash .35s steps(3) 1}
+@keyframes fxFlash{0%{opacity:.75}100%{opacity:0}}
+
+/* ---------- หัวครีปเปอร์ + Z z z (อยู่ในกล่องเดียวกัน ไม่ลอยไปทับข้อความ) ---------- */
+.lamp-wrap{position:relative;width:112px;height:112px;flex:none}
+.zzz{position:absolute;left:58%;bottom:100%;width:44px;height:30px;pointer-events:none;display:none}
+.hero.closed .zzz{display:block}
+.zzz svg{position:absolute;left:0;bottom:0;width:12px;height:12px;fill:var(--closed-ink);opacity:0;
+  animation:fxZ 3s ease-out infinite}
+.zzz svg:nth-child(2){width:15px;height:15px;animation-delay:1s}
+.zzz svg:nth-child(3){width:18px;height:18px;animation-delay:2s}
+@keyframes fxZ{
+  0%{opacity:0;transform:translate(0,0)}
+  15%{opacity:1}
+  70%{opacity:1}
+  100%{opacity:0;transform:translate(16px,-12px)}}
+@media (max-width:860px){
+  .lamp-wrap{width:72px;height:72px}
+  .hero.closed .lamp-wrap{width:140px;height:61px}
+  .hero.closed{padding-top:44px}
+  .stat .v{font-size:1.05rem}
+  #fxScan{opacity:.35}
+}
+
+/* =====================================================================
+   WARDEN PAGE — ตอนเซิร์ฟปิดหน้าเว็บเปลี่ยนเป็นธีม Warden (มืด/ฟ้าเรืองแสง) อัตโนมัติ
+   ===================================================================== */
+/* หน้า Warden (SVG พิกเซล) แทนหน้าครีปเปอร์ตอนเซิร์ฟปิด: หายใจ + ตา/ปลายหนวดเรืองแสงกะพริบ */
+.warden{display:none;width:100%;height:100%;overflow:visible;image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(47,227,212,.45))}
+.hero.closed .warden{display:block;animation:fxBreathe 3.4s ease-in-out infinite;transform-origin:50% 100%}
+.hero.closed .lamp{display:none}
+.hero.closed .lamp-wrap{width:240px;height:105px}
+.warden .gl{animation:fxGlow 1.4s ease-in-out infinite}
+.warden .tip{animation:fxGlow 2.2s ease-in-out infinite}
+.warden .tip:nth-child(odd){animation-delay:-.9s}
+@keyframes fxGlow{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes fxBreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+.hero.closed{--hero-a:rgba(47,227,212,.1);border-color:rgba(47,227,212,.38)}
+.hero.closed .word{color:#9ffcf3;text-shadow:4px 4px 0 var(--hard),0 0 26px rgba(47,227,212,.55)}
+.zzz svg{fill:#7dfff2}
+.hero.closed .sub{color:#8fc7c3}
+
+/* คลื่นโซนาร์ตอนสลับธีม (เปิด↔ปิด) + เปลี่ยนสีนุ่มๆ */
+#fxWave{position:fixed;left:50%;top:50%;width:260vmax;height:260vmax;border-radius:50%;pointer-events:none;z-index:46;
+  opacity:0;transform:translate(-50%,-50%) scale(0);will-change:transform,opacity}
+#fxWave.dark{background:radial-gradient(circle,transparent 0 56%,rgba(47,227,212,.55) 60%,rgba(2,12,15,.55) 63%,transparent 70%)}
+#fxWave.light{background:radial-gradient(circle,transparent 0 56%,rgba(120,230,70,.6) 60%,rgba(255,255,255,.55) 63%,transparent 70%)}
+#fxWave.go{animation:fxWave 1.1s cubic-bezier(.2,.6,.3,1) 1 both}
+@keyframes fxWave{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(0)}
+  80%{opacity:.7}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+html.theme-fade body,html.theme-fade .side,html.theme-fade .block,html.theme-fade .stat,html.theme-fade .hero,
+html.theme-fade button,html.theme-fade .chip,html.theme-fade .notice,html.theme-fade code{
+  transition:background-color .7s ease,color .7s ease,border-color .7s ease,box-shadow .7s ease!important}
