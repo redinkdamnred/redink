@@ -123,24 +123,102 @@
   window.addEventListener('resize', hideTip);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') hideTip(); });
 
+  /* ---------- โพเดียม 1-3 + อนิเมชันตอนอันดับเปลี่ยน ---------- */
+  var pod = document.createElement('div');
+  pod.className = 'mcx-pod'; pod.hidden = true;
+  list.parentNode.insertBefore(pod, list);
+  var prevRank = {}, prevTop = {}, lastKind = null;
+
+  function moveBadge(delta) {
+    var b = document.createElement('i');
+    b.className = 'mcx-mv ' + (delta > 0 ? 'up' : 'down');
+    b.textContent = (delta > 0 ? '▲' : '▼') + Math.abs(delta);
+    b.setAttribute('aria-label', delta > 0 ? 'ขึ้น ' + delta + ' อันดับ' : 'ลง ' + Math.abs(delta) + ' อันดับ');
+    return b;
+  }
+  function wireTip(node, p) {
+    node.tabIndex = 0;
+    node.setAttribute('aria-label', p.n + ' — ดูรายละเอียด: ' + LABEL[kind]);
+    node.addEventListener('mouseenter', function () { showTip(node, p); });
+    node.addEventListener('mouseleave', hideTip);
+    node.addEventListener('focus', function () { showTip(node, p); });
+    node.addEventListener('blur', hideTip);
+    node.addEventListener('click', function () { if (tipFor === node) hideTip(); else showTip(node, p); });
+  }
+  function podSpot(p, i, k, delta, newFirst) {
+    var d = document.createElement('div');
+    d.className = 'mcx-pd pd' + (i + 1) + (delta > 0 ? ' mv-up' : delta < 0 ? ' mv-down' : '');
+    var who = document.createElement('div'); who.className = 'mcx-pd-who';
+    if (i === 0) {
+      var cr = document.createElement('div'); cr.className = 'mcx-crown' + (newFirst ? ' new' : '');
+      cr.innerHTML = window.mcPixArt ? window.mcPixArt('crown') : '';
+      who.appendChild(cr);
+    }
+    var hd = document.createElement('div'); hd.className = 'mcx-pd-head';
+    if (p.known) {
+      var img = document.createElement('img');
+      img.src = 'https://mc-heads.net/avatar/' + encodeURIComponent(p.n) + '/' + (i === 0 ? 96 : 72);
+      img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
+      hd.appendChild(img);
+    } else {
+      var ph = document.createElement('div'); ph.className = 'mcx-pd-ph'; ph.textContent = '?'; hd.appendChild(ph);
+    }
+    if (delta) hd.appendChild(moveBadge(delta));
+    var nm = document.createElement('div'); nm.className = 'mcx-pd-n'; nm.textContent = p.n;
+    var vl = document.createElement('div'); vl.className = 'mcx-pd-v'; vl.textContent = fmt(kind, p[k]);
+    who.appendChild(hd); who.appendChild(nm); who.appendChild(vl);
+    var st = document.createElement('div'); st.className = 'mcx-pd-step'; st.textContent = i + 1;
+    d.appendChild(who); d.appendChild(st);
+    wireTip(d, p);
+    return d;
+  }
+
   function render() {
     hideTip();
     list.textContent = '';
+    pod.textContent = '';
     stat.textContent = data && data.updatedAt ? ago(data.updatedAt) : '';
     var k = KEY[kind];
     var rows = (data ? data.players : []).filter(function (p) { return p[k] > 0; })
       .sort(function (a, b) { return b[k] - a[k] || a.n.localeCompare(b.n); }).slice(0, 10);
 
     if (!rows.length) {
+      pod.hidden = true; list.style.display = '';
+      list.classList.remove('mcx-rest');
       var li = document.createElement('li');
       li.className = 'empty';
       li.textContent = data && data.updatedAt ? 'ยังไม่มีข้อมูลในหมวดนี้' : 'กำลังรอข้อมูลจากเซิร์ฟ…';
       list.appendChild(li);
       return;
     }
+
+    // เทียบอันดับกับครั้งก่อนที่เปิดหมวดนี้ (ครั้งแรก = ไม่มีอนิเมชัน)
+    var before = prevRank[kind], now = {};
+    var delta = {};
     rows.forEach(function (p, i) {
+      now[p.n] = i;
+      if (before) delta[p.n] = before[p.n] === undefined ? 0 : before[p.n] - i; // + = ขึ้น
+    });
+    var topNow = rows[0].n, topBefore = prevTop[kind];
+    var newFirst = !!before && topBefore !== undefined && topBefore !== topNow;
+    prevRank[kind] = now; prevTop[kind] = topNow;
+
+    // โพเดียม: เรียงซ้ายไป ขวา = 2, 1, 3
+    var podRows = rows.slice(0, 3);
+    var order = podRows.length === 1 ? [0] : podRows.length === 2 ? [1, 0] : [1, 0, 2];
+    order.forEach(function (i) { pod.appendChild(podSpot(podRows[i], i, k, delta[podRows[i].n] || 0, newFirst && i === 0)); });
+    pod.hidden = false;
+    pod.classList.toggle('grow', lastKind !== kind);
+    lastKind = kind;
+
+    // รายการที่เหลือ (อันดับ 4-10)
+    var rest = rows.slice(3);
+    list.classList.add('mcx-rest');
+    list.style.display = rest.length ? '' : 'none';
+    rest.forEach(function (p, j) {
+      var i = j + 3, d = delta[p.n] || 0;
       var li = document.createElement('li');
-      var rk = document.createElement('span'); rk.className = 'rk' + (i === 0 ? ' first' : ''); rk.textContent = i + 1;
+      var rk = document.createElement('span'); rk.className = 'rk'; rk.textContent = i + 1;
       li.appendChild(rk);
       if (p.known) {
         var img = document.createElement('img');
@@ -151,16 +229,16 @@
       var nm = document.createElement('span'); nm.className = 'rn'; nm.textContent = p.n;
       var vl = document.createElement('span'); vl.className = 'rv'; vl.textContent = fmt(kind, p[k]);
       vl.title = LABEL[kind];
-      li.appendChild(nm); li.appendChild(vl);
-      li.className = 'has-tip'; li.tabIndex = 0;
-      li.setAttribute('aria-label', p.n + ' — ดูรายละเอียด: ' + LABEL[kind]);
-      li.addEventListener('mouseenter', function () { showTip(li, p); });
-      li.addEventListener('mouseleave', hideTip);
-      li.addEventListener('focus', function () { showTip(li, p); });
-      li.addEventListener('blur', hideTip);
-      li.addEventListener('click', function () { if (tipFor === li) hideTip(); else showTip(li, p); });
+      li.appendChild(nm); if (d) li.appendChild(moveBadge(d)); li.appendChild(vl);
+      li.className = 'has-tip' + (d > 0 ? ' mv-up' : d < 0 ? ' mv-down' : '');
+      wireTip(li, p);
       list.appendChild(li);
     });
+
+    if (newFirst) {
+      if (window.mcAdv) window.mcAdv({ icon: 'crown', name: 'ผู้นำคนใหม่ — ' + topNow + ' ขึ้นอันดับ 1 (' + LABEL[kind] + ')', challenge: true });
+      if (window.mcSfx) window.mcSfx('levelup');
+    }
   }
 
   tabs.forEach(function (b) {

@@ -1,0 +1,179 @@
+/* =====================================================================
+   FUN FX — สไตล์ของ fun-fx.js และโพเดียมอันดับ (ใช้ตัวแปรสีเดิมของธีม)
+   ===================================================================== */
+
+/* ---------- ป้าย Advancement Made! ---------- */
+.mcx-adv-wrap{position:fixed;top:calc(14px + env(safe-area-inset-top,0px));right:14px;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:8px;width:min(330px,calc(100vw - 20px));pointer-events:none}
+.mcx-adv{display:flex;align-items:center;gap:12px;width:100%;padding:10px 16px 10px 10px;background:#1b1b1b;color:#fff;
+  box-shadow:inset 0 0 0 2px #6d6d6d,inset 0 0 0 4px #121212,4px 4px 0 rgba(0,0,0,.45),0 0 22px var(--glow);
+  transform:translateX(120%);opacity:0;transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .35s ease}
+.mcx-adv.in{transform:translateX(0);opacity:1}
+.mcx-adv-ic{flex:none;width:44px;height:44px;display:grid;place-items:center;background:#3d3d3d;box-shadow:inset 0 0 0 2px #1a1a1a,inset 3px 3px 0 rgba(255,255,255,.18),inset -3px -3px 0 rgba(0,0,0,.35)}
+.mcx-adv.ch .mcx-adv-ic{background:#5a2c6e}
+.mcx-adv-ic svg,.mcx-adv-ic img{width:28px;height:28px;image-rendering:pixelated;display:block}
+.mcx-adv-tx{min-width:0;display:flex;flex-direction:column;gap:5px}
+.mcx-adv-t{font-family:var(--font-pixel);font-size:.58rem;line-height:1.3;color:#ffff55;font-weight:400;letter-spacing:.02em}
+.mcx-adv.ch .mcx-adv-t{color:#ff55ff}
+.mcx-adv-n{font-size:.88rem;line-height:1.3;font-weight:600;overflow-wrap:anywhere}
+@media (max-width:860px){
+  .mcx-adv-wrap{right:auto;left:50%;transform:translateX(-50%);align-items:center}
+  .mcx-adv{transform:translateY(-150%)}
+  .mcx-adv.in{transform:translateY(0)}
+}
+
+/* ---------- แถบ XP ---------- */
+.mcx-xp{margin-top:16px;padding:14px 18px 12px;text-align:center}
+.mcx-xp-lv{font-family:var(--font-pixel);font-size:1.15rem;line-height:1;color:#80ff20;margin-bottom:8px;display:inline-block;
+  text-shadow:2px 0 #000,-2px 0 #000,0 2px #000,0 -2px #000,2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000}
+.mcx-xp-track{position:relative;height:16px;background:#0b0b0b;box-shadow:0 0 0 2px #000,0 0 0 4px rgba(255,255,255,.12);overflow:hidden}
+.mcx-xp-fill{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1);
+  background:linear-gradient(180deg,#c8ff7a 0 28%,#7fe01a 28% 68%,#3f9a0c 68%)}
+.mcx-xp-track::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,transparent 0 calc(100% / 18 - 2px),rgba(0,0,0,.6) calc(100% / 18 - 2px) calc(100% / 18))}
+.mcx-xp-cap{margin-top:8px}
+.mcx-xp-orb{position:absolute;left:0;top:0;width:10px;height:10px;z-index:5;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 35% 35%,#f6ffb8,#a9ef2e 55%,#4fb200);box-shadow:0 0 8px #b8ff3a;animation:mcxOrb .36s steps(2) infinite}
+@keyframes mcxOrb{50%{filter:hue-rotate(40deg) brightness(1.2)}}
+.mcx-xp-lv.up{animation:mcxPop .9s cubic-bezier(.2,1.6,.4,1)}
+@keyframes mcxPop{0%{transform:scale(1)}30%{transform:scale(2);color:#fff}100%{transform:scale(1)}}
+.mcx-xp.flash .mcx-xp-fill{filter:brightness(1.5)}
+
+/* ---------- สกินเต็มตัวตอนชี้ชิปผู้เล่น ---------- */
+.chip.has-head img{will-change:transform;transition:transform .08s linear}
+.mcx-skin{position:fixed;z-index:65;width:124px;height:214px;pointer-events:none;opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+.mcx-skin[hidden]{display:none}
+.mcx-skin.show{opacity:1;transform:translateY(0)}
+.mcx-skin-in{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;padding:8px 6px 8px;
+  background:var(--panel);box-shadow:inset 0 0 0 2px var(--line2),4px 4px 0 var(--hard,rgba(0,0,0,.5));transition:transform .1s linear;will-change:transform}
+.mcx-skin-in img{height:164px;width:auto;max-width:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 0 rgba(0,0,0,.35))}
+.mcx-skin-n{font-weight:700;font-size:.82rem;color:var(--head);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- รอยแตกเมื่อคลิกพื้นหลัง ---------- */
+.mcx-crack{position:fixed;width:52px;height:52px;z-index:9990;pointer-events:none;animation:mcxCrack .72s steps(6) forwards}
+.mcx-crack svg{display:block}
+.mcx-deb{position:absolute;width:5px;height:5px;margin:-2px 0 0 -2px;box-shadow:inset -1px -1px 0 rgba(0,0,0,.35)}
+@keyframes mcxCrack{0%{opacity:1;transform:scale(.7)}18%{transform:scale(1)}70%{opacity:1}100%{opacity:0}}
+
+/* ---------- ปุ่มลอย (คอมพิวเตอร์) ---------- */
+.mcx-dock{position:fixed;right:14px;bottom:14px;z-index:55;display:flex;gap:8px}
+.mcx-dk{width:38px;height:38px;padding:0;display:grid;place-items:center;border-radius:0;color:var(--muted);background:var(--panel);
+  border:0;box-shadow:inset 0 0 0 2px var(--line2),3px 3px 0 var(--hard,rgba(0,0,0,.5));opacity:.82;transition:opacity .15s,color .15s,transform .1s}
+.mcx-dk:hover{opacity:1;color:var(--head);transform:translateY(-1px)}
+.mcx-dk.on{color:var(--accent);opacity:1;box-shadow:inset 0 0 0 2px var(--accent),3px 3px 0 var(--hard,rgba(0,0,0,.5)),0 0 14px var(--glow)}
+.mcx-dk svg,.mcx-hb-slot svg{width:22px;height:22px;display:block}
+.mcx-dk .i-off,.mcx-hb-slot .i-off{display:inline-flex}.mcx-dk .i-on,.mcx-hb-slot .i-on{display:none}
+.mcx-dk.on .i-on,.mcx-hb-slot.on .i-on{display:inline-flex}.mcx-dk.on .i-off,.mcx-hb-slot.on .i-off{display:none}
+
+/* ---------- Hotbar (มือถือ) ---------- */
+.mcx-hb,.mcx-hb-name{display:none}
+@media (max-width:860px){
+  .mcx-dock{display:none}
+  .mcx-hb-on .nav{display:none}
+  .mcx-hb-on .main{padding-bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+  .mcx-hb-on .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+  .mcx-hb{position:fixed;left:50%;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:56;display:grid;
+    grid-template-columns:repeat(9,minmax(0,1fr));width:min(calc(100vw - 12px),486px);padding:3px;background:rgba(18,18,18,.88);
+    box-shadow:0 0 0 2px #000,inset 0 0 0 2px #4a4a4a,0 6px 18px rgba(0,0,0,.45)}
+  .mcx-hb-slot{position:relative;aspect-ratio:1;min-width:0;padding:0;display:grid;place-items:center;border:0;border-radius:0;color:#cfd8d8;
+    background:rgba(120,120,120,.22);box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 2px 2px 0 rgba(255,255,255,.08)}
+  .mcx-hb-slot.empty{opacity:.6}
+  .mcx-hb-slot svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .mcx-hb-slot svg[shape-rendering]{fill:currentColor;stroke:none}
+  .mcx-hb-slot.sel{color:#fff;z-index:2;box-shadow:0 0 0 3px #fff,0 0 0 5px #000;background:rgba(160,160,160,.35)}
+  .mcx-hb-slot.on{color:var(--accent)}
+  .mcx-hb-n{position:absolute;right:3px;bottom:1px;font-family:var(--font-pixel);font-style:normal;font-size:.52rem;color:#fff;text-shadow:1px 1px 0 #000}
+  .mcx-hb-name{position:fixed;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:57;display:block;
+    padding:2px 8px;font-size:.9rem;font-weight:600;color:#fff;text-shadow:2px 2px 0 #3a3a3a;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap}
+  .mcx-hb-name.show{opacity:1}
+  .mcx-mob{--mcx-ground:calc(76px + env(safe-area-inset-bottom,0px))}
+}
+
+/* ---------- Herobrine ---------- */
+.mcx-dim{position:fixed;inset:0;z-index:9995;background:#000;opacity:0;pointer-events:none;transition:opacity .08s}
+.mcx-dim.on{opacity:.55}
+.mcx-hero{position:fixed;z-index:9996;width:150px;height:150px;pointer-events:none;opacity:0;filter:drop-shadow(0 0 18px rgba(255,255,255,.55))}
+.mcx-hero.on{opacity:1}
+.mcx-hero svg{width:100%;height:100%;display:block}
+
+/* ---------- มอนเดินข้ามจอ ---------- */
+.mcx-mob{--mcx-ground:6px;position:fixed;left:0;bottom:var(--mcx-ground);z-index:41;cursor:pointer;will-change:transform;-webkit-tap-highlight-color:transparent}
+.mcx-mob-in{line-height:0}
+.mcx-mob-in svg{display:block;image-rendering:pixelated}
+.mcx-mob.pig .mcx-mob-in svg,.mcx-mob.ender .mcx-mob-in svg{animation:mcxBob .36s steps(2) infinite}
+@keyframes mcxBob{50%{transform:translateY(-2px)}}
+.mcx-mob.ender .mcx-mob-in svg{filter:drop-shadow(0 0 6px rgba(224,64,255,.45))}
+.mcx-mob.blink{animation:mcxBlink .26s steps(2)}
+@keyframes mcxBlink{50%{opacity:.15}}
+.mcx-mob.bat{bottom:auto;top:0}
+.mcx-mob.bat .mcx-mob-in.b{position:absolute;left:0;top:0;display:none}
+.mcx-mob.bat.flap .mcx-mob-in:not(.b){display:none}
+.mcx-mob.bat.flap .mcx-mob-in.b{display:block}
+.mcx-pt{position:fixed;z-index:42;width:6px;height:6px;margin:-3px 0 0 -3px;pointer-events:none;box-shadow:0 0 6px currentColor}
+
+/* ---------- โพเดียมอันดับ ---------- */
+.mcx-pod{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin:4px 0 16px;padding-top:40px}
+.mcx-pod[hidden]{display:none}
+.mcx-pd{position:relative;flex:1 1 0;min-width:0;max-width:158px;display:flex;flex-direction:column;align-items:center;cursor:pointer;outline:0;-webkit-tap-highlight-color:transparent}
+.mcx-pd:focus-visible .mcx-pd-step{box-shadow:0 0 0 3px var(--accent),inset -4px -4px 0 rgba(0,0,0,.22),inset 4px 4px 0 rgba(255,255,255,.28)}
+.mcx-pd-who{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;margin-bottom:8px;text-align:center}
+.mcx-pd-head{position:relative;line-height:0}
+.mcx-pd-head img{display:block;image-rendering:pixelated;border-radius:0!important;box-shadow:0 0 0 2px rgba(0,0,0,.45),0 4px 0 rgba(0,0,0,.3)}
+.mcx-pd-ph{display:grid;place-items:center;background:var(--inset);color:var(--muted);font-family:var(--font-pixel);box-shadow:inset 0 0 0 2px var(--line2)}
+.pd1 .mcx-pd-head img,.pd1 .mcx-pd-ph{width:72px;height:72px}
+.pd2 .mcx-pd-head img,.pd2 .mcx-pd-ph{width:56px;height:56px}
+.pd3 .mcx-pd-head img,.pd3 .mcx-pd-ph{width:46px;height:46px}
+.mcx-pd-n{max-width:100%;font-weight:700;font-size:.95rem;line-height:1.2;overflow-wrap:anywhere}
+.mcx-pd-v{font-family:var(--font-display);font-weight:700;font-size:.9rem;color:var(--head);white-space:nowrap}
+.mcx-pd-step{width:100%;display:grid;place-items:center;font-family:var(--font-pixel);font-size:1.4rem;transform-origin:bottom;
+  box-shadow:inset -4px -4px 0 rgba(0,0,0,.22),inset 4px 4px 0 rgba(255,255,255,.28)}
+.pd1 .mcx-pd-step{height:108px;background:linear-gradient(180deg,#ffe08a,#c8921c);color:#2a1a04;border:2px solid #7a5610}
+.pd2 .mcx-pd-step{height:78px;background:linear-gradient(180deg,#f1f4f3,#a4aeac);color:#1b2220;border:2px solid #6f7977}
+.pd3 .mcx-pd-step{height:56px;background:linear-gradient(180deg,#eeb07c,#b0652f);color:#2a1306;border:2px solid #6d3d18}
+.mcx-pd:hover .mcx-pd-head img{box-shadow:0 0 0 2px var(--accent),0 0 14px var(--glow)}
+.mcx-crown{position:absolute;left:50%;top:-34px;width:44px;height:30px;margin-left:-22px;pointer-events:none;animation:mcxFloat 1.7s ease-in-out infinite;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+.mcx-crown svg{display:block;width:100%;height:100%}
+@keyframes mcxFloat{50%{transform:translateY(-6px)}}
+.mcx-crown.new{animation:mcxCrownDrop .95s cubic-bezier(.3,1.4,.5,1) both,mcxFloat 1.7s ease-in-out .95s infinite}
+@keyframes mcxCrownDrop{0%{transform:translateY(-70px) rotate(-35deg) scale(1.7);opacity:0}60%{opacity:1}100%{transform:translateY(0) rotate(0) scale(1)}}
+.mcx-pod.grow .mcx-pd-step{animation:mcxGrow .6s cubic-bezier(.2,.9,.3,1.15) both}
+.mcx-pod.grow .pd3 .mcx-pd-step{animation-delay:.04s}.mcx-pod.grow .pd2 .mcx-pd-step{animation-delay:.16s}.mcx-pod.grow .pd1 .mcx-pd-step{animation-delay:.3s}
+.mcx-pod.grow .mcx-pd-who{animation:mcxDrop .5s cubic-bezier(.3,1.3,.5,1) both}
+.mcx-pod.grow .pd3 .mcx-pd-who{animation-delay:.3s}.mcx-pod.grow .pd2 .mcx-pd-who{animation-delay:.42s}.mcx-pod.grow .pd1 .mcx-pd-who{animation-delay:.56s}
+@keyframes mcxGrow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes mcxDrop{from{transform:translateY(-26px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ลูกศรอันดับเปลี่ยน */
+.mcx-mv{position:absolute;z-index:3;padding:1px 5px;font-family:var(--font-pixel);font-size:.5rem;line-height:1.5;font-style:normal;pointer-events:none;animation:mcxMv .6s cubic-bezier(.3,1.5,.5,1) both}
+.mcx-mv.up{background:#2f8f3a;color:#eaffea;box-shadow:0 0 10px rgba(91,229,138,.7)}
+.mcx-mv.down{background:#a8362c;color:#ffeceb;box-shadow:0 0 10px rgba(255,90,74,.6)}
+.mcx-pd-head .mcx-mv{right:-12px;top:-8px}
+.rank li .mcx-mv{position:static;flex:none;align-self:center}
+@keyframes mcxMv{from{transform:scale(0) translateY(8px)}to{transform:scale(1) translateY(0)}}
+.rank li.mv-up{animation:mcxRowUp .7s ease-out both!important}
+.rank li.mv-down{animation:mcxRowDown .7s ease-out both!important}
+@keyframes mcxRowUp{0%{transform:translateY(18px);background:rgba(91,229,138,.28)}100%{transform:none;background:transparent}}
+@keyframes mcxRowDown{0%{transform:translateY(-18px);background:rgba(255,90,74,.22)}100%{transform:none;background:transparent}}
+.mcx-pd.mv-up .mcx-pd-who{animation:mcxHop .6s cubic-bezier(.3,1.4,.5,1) both!important}
+.mcx-pd.mv-down .mcx-pd-who{animation:mcxSink .6s ease-out both!important}
+@keyframes mcxHop{0%{transform:translateY(34px)}100%{transform:none}}
+@keyframes mcxSink{0%{transform:translateY(-26px)}100%{transform:none}}
+
+/* รายการอันดับที่เหลือ (4 ลงไป) ใช้สีป้ายเลขปกติ ไม่ใช้ทอง/เงิน/ทองแดง */
+.rank.mcx-rest li:nth-child(-n+3) .rk{background:var(--inset);border-color:var(--line2);color:var(--muted)}
+.rank.mcx-rest li:nth-child(-n+3) .mx-bar{background:linear-gradient(90deg,var(--bar-a),var(--bar-b))}
+.rank.mcx-rest li:nth-child(-n+3) .rk::after{display:none}
+@media (max-width:480px){
+  .mcx-pod{gap:6px}
+  .pd1 .mcx-pd-head img,.pd1 .mcx-pd-ph{width:62px;height:62px}
+  .pd2 .mcx-pd-head img,.pd2 .mcx-pd-ph{width:48px;height:48px}
+  .pd3 .mcx-pd-head img,.pd3 .mcx-pd-ph{width:40px;height:40px}
+  .mcx-pd-n{font-size:.85rem}
+  .mcx-pd-v{font-size:.78rem}
+}
+
+/* ลดการเคลื่อนไหวตามที่ระบบตั้งไว้ */
+@media (prefers-reduced-motion:reduce){
+  .mcx-crown,.mcx-crown.new,.mcx-xp-orb,.mcx-mob .mcx-mob-in svg{animation:none!important}
+  .mcx-pod.grow .mcx-pd-step,.mcx-pod.grow .mcx-pd-who,.mcx-mv{animation:none!important}
+  .mcx-adv,.mcx-skin{transition:none}
+}
