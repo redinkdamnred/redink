@@ -228,15 +228,18 @@
   /* Z z z ตอนเซิร์ฟปิด ทำด้วย HTML/CSS (.zzz ใน index.html) อยู่ในกล่องของหัวครีปเปอร์ จึงไม่ไปทับข้อความอื่น */
 
   /* ---------- ลูป ---------- */
-  var last = performance.now(), acc = 0, raf = 0, T = 0;
+  var last = performance.now(), acc = 0, raf = 0, T = 0, bgAcc = 0, fgDirty = false;
   function frame(now) {
     raf = requestAnimationFrame(frame);
     var dt = (now - last) / 1000; last = now;
     if (dt > .1) dt = .1;
-    T += dt;                      // วาดทุกเฟรมของจอ (canvas เล็กมาก เบา) ไม่หน่วงเหลือ ~20fps อีกแล้ว
-    drawBg(T, dt);
-    fg.clearRect(0, 0, W, H);
+    T += dt;
+    bgAcc += dt;                  // พื้นหลังวาด ~30 เฟรม/วิ (ฉากพิกเซลไม่ต้อง 60) ลดภาระ CPU/GPU ลงครึ่งหนึ่ง
+    if (bgAcc >= 0.033) { drawBg(T, bgAcc); bgAcc = 0; }
     if (!cr && now >= nextCr && !doc.hidden) spawnCreeper();
+    var busy = !!cr || parts.length > 0;
+    if (busy || fgDirty) fg.clearRect(0, 0, W, H);   // ไม่มีครีปเปอร์/อนุภาค = ไม่ต้องล้างทุกเฟรม
+    fgDirty = busy;
     if (cr) { updateCreeper(dt, T); if (cr) drawCreeper(cr, T); }
     if (parts.length) drawParts(dt);
   }
