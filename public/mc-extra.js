@@ -145,22 +145,22 @@
   /* =====================================================================
      ป้าย Advancement Made!
      ===================================================================== */
-  var advWrap = el('div', 'mcx-adv-wrap'); advWrap.setAttribute('aria-live', 'polite');
+  var advWrap = el('div', 'mcx-ach-wrap'); advWrap.setAttribute('aria-live', 'polite');
   body.appendChild(advWrap);
   var advQ = [], advShown = 0;
   function pump() {
     if (advShown >= 2 || !advQ.length) return;
     var o = advQ.shift(); advShown++;
-    var card = el('div', 'mcx-adv' + (o.challenge ? ' ch' : ''));
-    var ic = el('div', 'mcx-adv-ic');
+    var card = el('div', 'mcx-ach' + (o.challenge ? ' ch' : ''));
+    var ic = el('div', 'mcx-ach-ic');
     if (o.img) {
       var im = el('img'); im.alt = ''; im.width = 32; im.height = 32; im.referrerPolicy = 'no-referrer'; im.src = o.img;
       im.addEventListener('error', function () { ic.innerHTML = art('steve'); });
       ic.appendChild(im);
     } else ic.innerHTML = art(o.icon || 'grass');
-    var tx = el('div', 'mcx-adv-tx');
-    tx.appendChild(el('b', 'mcx-adv-t', o.challenge ? 'Challenge Complete!' : 'Advancement Made!'));
-    tx.appendChild(el('span', 'mcx-adv-n', o.name));
+    var tx = el('div', 'mcx-ach-tx');
+    tx.appendChild(el('b', 'mcx-ach-t', o.challenge ? 'Challenge Complete!' : 'Advancement Made!'));
+    tx.appendChild(el('span', 'mcx-ach-n', o.name));
     card.appendChild(ic); card.appendChild(tx);
     advWrap.appendChild(card);
     window.mcSfx('adv');
@@ -295,14 +295,14 @@
     prevCount = n; prevNames = names;
   }
   var _fetch = window.fetch;
-  if (_fetch) window.fetch = function (input) {
+  try { if (_fetch) window.fetch = function (input) {
     var p = _fetch.apply(this, arguments);
     try {
       var url = typeof input === 'string' ? input : (input && input.url) || '';
       if (url.indexOf('/api/status') > -1) p.then(function (r) { return r.clone().json(); }).then(onStatus).catch(function () {});
     } catch (e) {}
     return p;
-  };
+  }; } catch (e) { /* บางเบราว์เซอร์/ส่วนเสริมล็อก fetch ไว้ ก็ข้ามไป ส่วนอื่นยังทำงาน */ }
 
   /* =====================================================================
      หัวสกินหันตามเมาส์ + สกินเต็มตัวตอนชี้ชิปผู้เล่น
@@ -405,14 +405,14 @@
   }
   var curBtn = null, curOn = fine && store('mcCur') !== '0';
   function applyCursor() { root.classList.toggle('mcx-cur', curOn && fine); if (curBtn) { curBtn.setAttribute('aria-pressed', curOn ? 'true' : 'false'); curBtn.classList.toggle('on', curOn); } }
-  if (fine) {
+  if (fine) try {
     var cs = el('style');
     var sw = cursorURI(swordMap()), pk = cursorURI(pickMap());
     cs.textContent = 'html.mcx-cur,html.mcx-cur body{cursor:url("' + sw + '") 1 1,auto}' +
       'html.mcx-cur a,html.mcx-cur button,html.mcx-cur .nv,html.mcx-cur .has-tip,html.mcx-cur .chip,html.mcx-cur .mcx-pd,html.mcx-cur .mcx-mob,html.mcx-cur label,html.mcx-cur select,html.mcx-cur [role="button"]{cursor:url("' + pk + '") 9 9,pointer}' +
       'html.mcx-cur input,html.mcx-cur textarea{cursor:text}';
     doc.head.appendChild(cs);
-  }
+  } catch (e) {}
   var CRACK_COL = ['#5ec43a', '#8a5a3a', '#7d7d7d', '#b5b5b5'];
   var lastCrack = 0;
   function crack(x, y) {
@@ -463,11 +463,11 @@
   /* =====================================================================
      ปุ่มลอย (คอมพิวเตอร์): เสียง + เคอร์เซอร์
      ===================================================================== */
-  var dock = el('div', 'mcx-dock'); dock.setAttribute('role', 'group'); dock.setAttribute('aria-label', 'ตั้งค่าเอฟเฟกต์');
-  var dSfx = el('button', 'mcx-dk'); dSfx.type = 'button'; sfxIcon(dSfx); dSfx.addEventListener('click', toggleSfx);
+  var dock = el('div', 'mcx-tools'); dock.setAttribute('role', 'group'); dock.setAttribute('aria-label', 'ตั้งค่าเอฟเฟกต์');
+  var dSfx = el('button', 'mcx-tl'); dSfx.type = 'button'; sfxIcon(dSfx); dSfx.addEventListener('click', toggleSfx);
   sfxBtns.push(dSfx); dock.appendChild(dSfx);
   if (fine) {
-    curBtn = el('button', 'mcx-dk'); curBtn.type = 'button'; curBtn.title = 'เคอร์เซอร์พิกเซล'; curBtn.setAttribute('aria-label', 'เคอร์เซอร์พิกเซล');
+    curBtn = el('button', 'mcx-tl'); curBtn.type = 'button'; curBtn.title = 'เคอร์เซอร์พิกเซล'; curBtn.setAttribute('aria-label', 'เคอร์เซอร์พิกเซล');
     curBtn.innerHTML = '<svg viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="currentColor" d="M1 1h2v2H1zM3 3h2v2H3zM5 5h2v2H5zM7 7h2v2H7zM9 9h2v2H9zM7 9h2v2H7zM11 11h2v2h-2zM13 13h2v2h-2zM9 7h2v2H9z"/></svg>';
     curBtn.addEventListener('click', function () { curOn = !curOn; store('mcCur', curOn ? '1' : '0'); applyCursor(); });
     dock.appendChild(curBtn);
@@ -513,7 +513,7 @@
   function scheduleHotbar() { if (!hbRAF) hbRAF = requestAnimationFrame(buildHotbar); }
   var navEl = doc.querySelector('.nav');
   if (navEl) new MutationObserver(scheduleHotbar).observe(navEl, { subtree: true, attributes: true, attributeFilter: ['hidden', 'aria-current'], childList: true, characterData: true });
-  buildHotbar();
+  try { buildHotbar(); } catch (e) {}
 
   /* =====================================================================
      Easter egg: Herobrine + มอนเดินข้ามจอ
@@ -645,5 +645,5 @@
   }
   window.mcSpawnMob = spawnMob;
   function scheduleMob(ms) { clearTimeout(mobTimer); if (!reduce) mobTimer = setTimeout(function () { spawnMob(); if (!mobBusy) scheduleMob(rnd(20000, 40000)); }, ms); }
-  scheduleMob(rnd(25000, 45000));
+  try { scheduleMob(rnd(25000, 45000)); } catch (e) {}
 })();
