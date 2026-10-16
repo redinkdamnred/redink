@@ -198,13 +198,14 @@
     cr = { x: dir > 0 ? -SPR_W - 2 : W + 2, y: H - SPR_H - 1, dir: dir, state: 'walk', scale: 1, fuseT: 0,
       igniteAt: Math.random() < .4 ? rnd(.3, .7) : 2 }; // 40% จะชนวนเอง
   }
-  function igniteCreeper() { if (cr && cr.state === 'walk') { cr.state = 'fuse'; cr.fuseT = 0; } }
+  function sfx(n) { try { if (window.mcSfx) window.mcSfx(n); } catch (e) {} }   // เสียงจาก fun-fx.js (ปิดเป็นค่าเริ่มต้น)
+  function igniteCreeper() { if (cr && cr.state === 'walk') { cr.state = 'fuse'; cr.fuseT = 0; sfx('fuse'); } }
   function updateCreeper(dt, t) {
     if (!cr) return;
     if (cr.state === 'walk') {
       cr.x += cr.dir * 15 * dt;
       var prog = cr.dir > 0 ? (cr.x + SPR_W / 2) / W : 1 - (cr.x + SPR_W / 2) / W;
-      if (prog >= cr.igniteAt && prog < 1.1) cr.state = 'fuse';
+      if (prog >= cr.igniteAt && prog < 1.1) { cr.state = 'fuse'; sfx('fuse'); }
       if (cr.x > W + 4 || cr.x < -SPR_W - 4) { cr = null; nextCr = performance.now() + rnd(15000, 30000); return; }
     }
     if (cr.state === 'fuse') {
@@ -214,7 +215,7 @@
         var cx = (cr.x + SPR_W / 2) * PX, cy = (cr.y + SPR_H / 2) * PX;
         if (isDark()) burst(cx, cy, 130, C_SONIC, { vmin: 20, vmax: 80, g: 10, lmin: .8, lmax: 1.8, big: .4 });
         else burst(cx, cy, 110, C_BOOM, { vmin: 12, vmax: 70, g: 80, lmin: .7, lmax: 1.7, big: .4, lift: -20 });
-        quake();
+        quake(); sfx('boom');
         cr = null; nextCr = performance.now() + rnd(15000, 30000);
       }
     }
