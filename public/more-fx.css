@@ -145,4 +145,41 @@ html.mx-night #mxSky .mx-moon{opacity:.9}
 /* ---------- ลดภาระเครื่อง: ของเดิมที่กินแรงมากแต่แทบไม่เห็นผล ---------- */
 #fxScan::after{display:none}                                   /* แถบสแกนวิ่งทับทั้งจอ */
 .bars:not(.fx-grow) i:not(.zero):not(.none){animation:none!important}   /* กราฟเรืองแสงทีละแท่ง (filter ต่อแท่ง) */
+
+/* =====================================================================
+   SMOOTH — ทำให้การเคลื่อนไหวไหลต่อเนื่อง (easing นุ่ม, ไม่กระชาก)
+   ===================================================================== */
+html{scroll-behavior:smooth}
+
+/* ---------- เปลี่ยนแท็บ: หน้าเก่าจางออก + หน้าใหม่ไหลเข้า (View Transitions) ---------- */
+html.mx-vt-ok .panel.active{animation:none}
+html.mx-vt .main{view-transition-name:mx-main}
+html.mx-vt .side{view-transition-name:mx-side}
+::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
+::view-transition-group(mx-main){animation-duration:.45s;animation-timing-function:cubic-bezier(.2,.75,.2,1)}
+::view-transition-group(mx-side){animation-duration:.3s}
+::view-transition-old(mx-main){animation:mxVtOut .22s cubic-bezier(.4,0,1,1) both}
+::view-transition-new(mx-main){animation:mxVtIn .5s cubic-bezier(.16,.84,.3,1) .06s both}
+@keyframes mxVtOut{to{opacity:0;transform:translateY(-10px) scale(.992)}}
+@keyframes mxVtIn{from{opacity:0;transform:translateY(20px) scale(.992)}}
+
+/* ---------- ปุ่ม / เมนู / ชิป: ตอบสนองนุ่ม ไม่สะดุด ---------- */
+button,.btn{transition:transform .24s cubic-bezier(.2,.8,.2,1),box-shadow .24s cubic-bezier(.2,.8,.2,1),
+  background-color .25s ease,color .25s ease,border-color .25s ease,filter .25s ease!important}
+button:active,.btn:active{transition-duration:.07s!important}
+.nav .nv{transition:translate .3s cubic-bezier(.2,.8,.2,1),background-color .3s ease,color .3s ease,border-color .3s ease!important}
+.chip{transition:translate .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s ease}
+.rank li{transition:translate .3s cubic-bezier(.2,.8,.2,1),background-color .25s ease}
+.stat{transition:rotate .45s cubic-bezier(.2,.8,.2,1)}
+.toast{transition:opacity .3s ease,transform .4s cubic-bezier(.2,.8,.2,1)!important}
+.rank-tip:not([hidden]){animation:mxTip .2s cubic-bezier(.2,.8,.2,1) both}
+@keyframes mxTip{from{opacity:0;translate:0 6px}to{opacity:1;translate:0 0}}
+
+/* ---------- จังหวะแบบ "เป็นขั้น" -> เปลี่ยนเป็นไหลนุ่ม (เฉพาะตัวเล็กๆ ที่กระตุกตา) ---------- */
+.dot,.dot.open{animation:mxDot 2.4s ease-in-out infinite}
+@keyframes mxDot{0%,100%{opacity:1}50%{opacity:.4}}
+h2::before,#theme::before{animation:mxSqSmooth 3.2s ease-in-out infinite}
+@keyframes mxSqSmooth{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.25) rotate(90deg)}}
+.block::before,.stat::before{animation-timing-function:ease-in-out}
+.hero.closed .zzz svg{animation-timing-function:ease-in-out}
 }

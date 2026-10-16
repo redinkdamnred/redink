@@ -255,4 +255,28 @@
       });
     }).observe(pl, { childList: true });
   }
+
+  /* ---------- เปลี่ยนแท็บแบบครอสเฟด (View Transitions API) ----------
+   * ดักคลิกปุ่มเมนูตอนขาลง แล้วสั่งให้โค้ดเดิมทำงานภายใน startViewTransition
+   * เบราว์เซอร์ที่ไม่รองรับจะข้ามไปเลย ใช้การสลับแท็บแบบเดิม */
+  if (doc.startViewTransition) {
+    root.classList.add('mx-vt-ok');
+    var vtBusy = false;
+    doc.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.nv');
+      if (!b || b._mxPass || vtBusy) return;
+      if (b.getAttribute('aria-current') === 'page') return;
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      vtBusy = true;
+      root.classList.add('mx-vt');
+      var t;
+      try {
+        t = doc.startViewTransition(function () { b._mxPass = true; try { b.click(); } finally { b._mxPass = false; } });
+      } catch (err) { vtBusy = false; root.classList.remove('mx-vt'); b._mxPass = true; b.click(); b._mxPass = false; return; }
+      var done = function () { vtBusy = false; root.classList.remove('mx-vt'); };
+      t.finished.then(done, done);
+    }, true);
+  }
 })();
+
