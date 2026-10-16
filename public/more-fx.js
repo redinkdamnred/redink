@@ -11,7 +11,6 @@
   'use strict';
   var doc = document, root = doc.documentElement;
   var mq = window.matchMedia;
-  var calm = !!(mq && mq('(prefers-reduced-motion:reduce)').matches);   // calm: ยังเล่นอนิเมชันหลัก แต่ CSS ปิดตัวที่แรงให้
 
   var NS = 'http://www.w3.org/2000/svg';
   function $(id) { return doc.getElementById(id); }
@@ -61,7 +60,6 @@
   (function cubes() {
     var LIGHT = ['#5ec43a', '#8bd96a', '#8a5a2b', '#ffffff', '#b6f08f', '#3f9a28'];
     var DARK = ['#2fe3d4', '#86f5ea', '#17a8b0', '#5b8cff', '#a98bff', '#0e3d42'];
-    if (calm) return;
     var n = innerWidth < 700 ? 9 : 16;
     for (var i = 0; i < n; i++) {
       var c = doc.createElement('i');

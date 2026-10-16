@@ -10,7 +10,6 @@
   'use strict';
   var doc = document, root = doc.documentElement;
   var mq = window.matchMedia;
-  if (mq && mq('(prefers-reduced-motion:reduce)').matches) return;
   var fine = !!(mq && mq('(hover:hover) and (pointer:fine)').matches);
 
   function $(id) { return doc.getElementById(id); }

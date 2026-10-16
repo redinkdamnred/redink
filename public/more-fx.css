@@ -149,13 +149,3 @@ html.mx-night #mxSky .mx-moon{opacity:.9}
 @keyframes mxToast{0%{scale:.85}100%{scale:1}}
 
 }
-
-/* ผู้ที่ตั้ง "ลดการเคลื่อนไหว" ในระบบ: ยังเห็นอนิเมชันหลักแบบสงบ แต่ปิดตัวที่แรงที่สุด (ประตู บล็อกลอย การ์ดลอย) และทำให้ช้าลง */
-@media (prefers-reduced-motion:reduce){
-  html::before,html::after{display:none}
-  #mxSky .mx-cube{display:none}
-  .panel.active .stat{animation:fxPop .45s ease-out both}
-  .mx-ring{animation-duration:14s}
-  .mx-aurora i{animation-duration:48s}
-  #mxSky .mx-sun svg{animation:none}
-}
