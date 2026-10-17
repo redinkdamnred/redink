@@ -170,10 +170,3 @@
   .mcx-pd-n{font-size:.85rem}
   .mcx-pd-v{font-size:.78rem}
 }
-
-/* ลดการเคลื่อนไหวตามที่ระบบตั้งไว้ */
-@media (prefers-reduced-motion:reduce){
-  .mcx-crown,.mcx-crown.new,.mcx-xp-orb,.mcx-fig .mcx-fig-in svg{animation:none!important}
-  .mcx-pod.grow .mcx-pd-step,.mcx-pod.grow .mcx-pd-who,.mcx-mv{animation:none!important}
-  .mcx-ach,.mcx-skin{transition:none}
-}

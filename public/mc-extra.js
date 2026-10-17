@@ -14,7 +14,7 @@
   var doc = document, root = doc.documentElement, body = doc.body;
   var NS = 'http://www.w3.org/2000/svg';
   var reduce = false, fine = false;
-  try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  // ไม่อ่าน prefers-reduced-motion: เอฟเฟกต์เดิมของเว็บไม่เช็กค่านี้ และเครื่อง Windows ที่ปิดอนิเมชันจะส่งค่านี้มาทำให้สัตว์หาย
   try { fine = matchMedia('(pointer: fine)').matches; } catch (e) {}
 
   function $(id) { return doc.getElementById(id); }
