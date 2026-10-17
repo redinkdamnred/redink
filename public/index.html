@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <script>try{var m=localStorage.getItem('theme'),t=localStorage.getItem('srvState');if(m==='dark'||m==='light')document.documentElement.setAttribute('data-theme',m);else if(t==='closed'||t==='open')document.documentElement.setAttribute('data-theme',t==='closed'?'dark':'light')}catch(e){}</script>
 <script>try{if(sessionStorage.getItem('mxIntro'))document.documentElement.classList.add('mx-no-intro');else sessionStorage.setItem('mxIntro','1')}catch(e){}</script>
-<link rel="stylesheet" href="/style.css?v=7">
+<link rel="stylesheet" href="/style.css?v=7"><style>[data-off]{display:none!important}</style>
 <link rel="stylesheet" href="/pixel-fx.css?v=6"><link rel="stylesheet" href="/extra-fx.css?v=2"><link rel="stylesheet" href="/more-fx.css?v=8"><link rel="stylesheet" href="/mc-extra.css?v=5">
 <script src="/no-zoom.js?v=6"></script>
 </head>
@@ -197,7 +197,7 @@
   var navBtns=[].slice.call(document.querySelectorAll('.nv'));
   var current='p-overview', wanted=null;
   (function(){var h=(location.hash||'').slice(1);navBtns.forEach(function(b){if(b.getAttribute('data-h')===h)wanted=b.getAttribute('data-target')})})();
-  function shown(id){var e=$(id);return !!e&&!e.hidden}
+  function shown(id){var e=$(id);return !!e&&!e.hidden&&!e.hasAttribute('data-off')}
   function showPanel(id,fromUser){
     if(!shown(id))id='p-overview';
     current=id;if(fromUser)wanted=null;
@@ -383,8 +383,20 @@
     });
   }
 
+  /* ---------- แอดมินปิดแท็บ/หมวดอันดับได้ (ตั้งที่ /admin.html) ---------- */
+  var RANK_KINDS=['blocks','ores','mobs','hours','deaths','dist'];
+  function setOff(e,off){if(!e)return;if(off)e.setAttribute('data-off','');else e.removeAttribute('data-off')}
+  function applyOff(c){
+    var tabs=(c.hiddenTabs||[]).slice(), rk=c.hiddenRank||[];
+    if(RANK_KINDS.every(function(k){return rk.indexOf(k)>-1})&&tabs.indexOf('rank')<0)tabs.push('rank');
+    navBtns.forEach(function(b){var off=tabs.indexOf(b.getAttribute('data-h'))>-1;setOff(b,off);setOff($(b.getAttribute('data-target')),off)});
+    [].forEach.call(document.querySelectorAll('#rankBox [data-k]'),function(t){setOff(t,rk.indexOf(t.getAttribute('data-k'))>-1)});
+    syncNav();
+    try{document.dispatchEvent(new Event('mc-config'))}catch(e){}
+  }
   function renderStatic(){
     if(!cfg)return;
+    applyOff(cfg);
     $('srvName').textContent=cfg.name;
     document.title=cfg.name+' · สถานะเซิร์ฟ';
     $('addr').textContent=cfg.address;
@@ -440,7 +452,7 @@
 })();
 </script>
 <script src="/chat-client.js?v=6" defer></script>
-<script src="/ranking-client.js?v=11" defer></script>
+<script src="/ranking-client.js?v=12" defer></script>
 <script src="/pixel-fx.js?v=7" defer></script><script src="/extra-fx.js?v=2" defer></script><script src="/more-fx.js?v=5" defer></script><script src="/mc-extra.js?v=5" defer></script><script src="/mc-games.js?v=1" defer></script>
 </body>
 </html>

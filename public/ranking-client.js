@@ -139,10 +139,19 @@
     { k: 'rare', name: 'Rare', min: 0.4 }, { k: 'uncommon', name: 'Uncommon', min: 0.22 }, { k: 'common', name: 'Common', min: 0 }
   ];
   var meta = {};
+  function off(kd) { var b = box.querySelector('[data-k="' + kd + '"]'); return !!b && b.hasAttribute('data-off'); }
+  function activeKinds() { return KINDS.filter(function (kd) { return !off(kd); }); }
+  function fixKind() {
+    if (!off(kind)) return;
+    for (var i = 0; i < tabs.length; i++) if (!tabs[i].hasAttribute('data-off')) {
+      kind = tabs[i].getAttribute('data-k'); tabs.forEach(function (x) { x.setAttribute('aria-pressed', x === tabs[i] ? 'true' : 'false'); }); break;
+    }
+  }
   function computeMeta(players) {
     var out = {}, byKind = {};
     players.forEach(function (p) { out[p.n] = { ranks: {}, titles: [], score: 0 }; });
-    KINDS.forEach(function (kd) {
+    var kinds = activeKinds(), nk = kinds.filter(function (kd) { return kd !== 'deaths'; }).length || 1;
+    kinds.forEach(function (kd) {
       var k = KEY[kd];
       var arr = players.filter(function (p) { return p[k] > 0; }).sort(function (a, b) { return b[k] - a[k] || a.n.localeCompare(b.n); });
       byKind[kd] = arr.length;
@@ -154,7 +163,7 @@
       });
     });
     players.forEach(function (p) {
-      var m = out[p.n], v = m.score / 5, r = RARITY[RARITY.length - 1];
+      var m = out[p.n], v = m.score / nk, r = RARITY[RARITY.length - 1];
       for (var i = 0; i < RARITY.length; i++) if (v >= RARITY[i].min) { r = RARITY[i]; break; }
       m.rarity = r; m.main = m.titles.length ? (m.titles.filter(function (t) { return t.top; })[0] || m.titles[0]).text : 'นักผจญภัยหน้าใหม่';
       m.total = byKind;
@@ -182,7 +191,7 @@
     art.appendChild(img);
     var nm = mk('div', 'mcx-card-n', p.n), tt = mk('div', 'mcx-card-t', m.main);
     var tbl = mk('div', 'mcx-card-stats');
-    KINDS.forEach(function (kd) {
+    activeKinds().forEach(function (kd) {
       var v = p[KEY[kd]] || 0, r = m.ranks[kd], row = mk('div', 'mcx-card-row');
       row.appendChild(mk('span', 'l', KIND_NAME[kd])); row.appendChild(mk('b', 'v', v > 0 ? fmt(kd, v) : '–'));
       row.appendChild(mk('i', 'rk' + (r === 1 ? ' g' : ''), r ? '#' + r : ''));
@@ -251,6 +260,7 @@
   }
 
   function render() {
+    fixKind();
     hideTip();
     list.textContent = '';
     pod.textContent = '';
@@ -319,6 +329,7 @@
     }
   }
 
+  document.addEventListener('mc-config', function () { fixKind(); if (data) render(); });
   tabs.forEach(function (b) {
     b.addEventListener('click', function () {
       kind = b.getAttribute('data-k');

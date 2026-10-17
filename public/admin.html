@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script>try{var t=localStorage.getItem('theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <link rel="stylesheet" href="/style.css">
+<style>.vis-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}.vis-grid label{display:flex;align-items:center;gap:10px;padding:8px 10px;min-height:44px;cursor:pointer;background:var(--inset);box-shadow:inset 0 0 0 1px var(--line)}.vis-grid input{width:20px;height:20px;flex:none;accent-color:var(--accent)}</style>
 <script src="/no-zoom.js"></script>
 </head>
 <body>
@@ -42,6 +43,15 @@
       <h2 id="h-days">ช่วงเวลาที่มักเปิด (เวลาไทย)</h2>
       <div id="days"></div>
       <p class="small muted">เว้นว่าง = ไม่แสดงวันนั้นในตาราง</p>
+    </section>
+
+    <section class="block" aria-labelledby="h-vis">
+      <h2 id="h-vis">แท็บและหมวดที่แสดงบนหน้าแรก</h2>
+      <p class="small muted" style="margin-bottom:8px">ติ๊กออก = ซ่อน (ภาพรวมซ่อนไม่ได้) บางแท็บ เช่น แชท อันดับ มินิเกม จะขึ้นก็ต่อเมื่อเปิดใช้ในเซิร์ฟเวอร์ด้วย</p>
+      <h3 style="font-size:1rem;margin:10px 0 6px">แท็บเมนู</h3>
+      <div id="visTabs" class="vis-grid"></div>
+      <h3 style="font-size:1rem;margin:14px 0 6px">หมวดในอันดับผู้เล่น</h3>
+      <div id="visRank" class="vis-grid"></div>
     </section>
 
     <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
@@ -92,6 +102,7 @@
     $('ann').value=j.announcement||'';
     $('annCount').textContent=$('ann').value.length;
     var box=$('days');box.textContent='';
+    buildChecks('visTabs',TABS,j.hiddenTabs);buildChecks('visRank',RANKS,j.hiddenRank);
     (j.dayNames||[]).forEach(function(d,i){
       var row=document.createElement('div');row.className='row';
       var l=document.createElement('label');l.textContent='วัน'+d;l.setAttribute('for','d'+i);
@@ -100,6 +111,16 @@
       row.appendChild(l);row.appendChild(inp);box.appendChild(row);
     });
   }
+  var TABS=[['addr','ที่อยู่เซิร์ฟเวอร์'],['players','กำลังเล่นอยู่'],['chat','แชทกลุ่ม'],['rank','อันดับผู้เล่น'],['games','มินิเกม'],['chart','จำนวนผู้เล่น'],['history','ประวัติสถานะ'],['sched','ช่วงเวลาที่มักเปิด']];
+  var RANKS=[['blocks','ขุดบล็อกรวม'],['ores','ขุดแร่'],['mobs','ฆ่ามอนสเตอร์'],['hours','เวลาเล่น'],['deaths','ตายมากสุด'],['dist','เดินทางไกลสุด']];
+  function buildChecks(boxId,list,hidden){
+    var box=$(boxId);box.textContent='';
+    list.forEach(function(it){
+      var l=document.createElement('label');var c=document.createElement('input');c.type='checkbox';c.value=it[0];c.checked=(hidden||[]).indexOf(it[0])<0;
+      var t=document.createElement('span');t.textContent=it[1];l.appendChild(c);l.appendChild(t);box.appendChild(l);
+    });
+  }
+  function unchecked(boxId){return [].filter.call($(boxId).querySelectorAll('input'),function(i){return !i.checked}).map(function(i){return i.value})}
   function showLogin(){$('loginBox').hidden=false;$('editor').hidden=true;pw='';store('pw',null)}
 
   function login(pass,silent){
@@ -118,7 +139,7 @@
     var days={};
     [].forEach.call($('days').querySelectorAll('input'),function(i){days[i.dataset.day]=i.value});
     $('save').disabled=true;
-    api('PUT',{days:days,announcement:$('ann').value}).then(function(j){
+    api('PUT',{days:days,announcement:$('ann').value,hiddenTabs:unchecked('visTabs'),hiddenRank:unchecked('visRank')}).then(function(j){
       if(j.ok)toast('บันทึกแล้ว หน้าแรกจะอัปเดตภายใน 1 นาที');
       else{toast(j.message||'บันทึกไม่สำเร็จ');if(j.status===401)showLogin()}
     }).catch(function(){toast('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง')}).then(function(){$('save').disabled=false});

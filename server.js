@@ -399,10 +399,11 @@ const DAY_NAMES = ['จันทร์', 'อังคาร', 'พุธ', 'พ
 
 let fileSchedule = { days: {} };
 try { fileSchedule = JSON.parse(fs.readFileSync(path.join(__dirname, 'schedule.json'), 'utf8')); } catch (_) { /* ไม่มีก็ได้ */ }
-let settings = { days: null, announcement: '' };
+const { parseHidden } = require('./hidden');
+let settings = { days: null, announcement: '', hiddenTabs: [], hiddenRank: [] };
 try {
   const j = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
-  if (j && typeof j === 'object') settings = { days: j.days && typeof j.days === 'object' ? j.days : null, announcement: String(j.announcement || '') };
+  if (j && typeof j === 'object') settings = { days: j.days && typeof j.days === 'object' ? j.days : null, announcement: String(j.announcement || ''), ...parseHidden(j, {}) };
 } catch (_) { /* ยังไม่เคยตั้งค่า */ }
 
 function currentSchedule() {
@@ -561,6 +562,8 @@ app.get('/api/config', (req, res) => {
     invite: cfg.invite,
     schedule: currentSchedule(),
     announcement: settings.announcement,
+    hiddenTabs: settings.hiddenTabs,
+    hiddenRank: settings.hiddenRank,
     canRequest: !!cfg.webhook,
   });
 });
@@ -604,7 +607,7 @@ function adminAuth(req, res, next) {
   next();
 }
 app.get('/api/admin/settings', adminAuth, (req, res) => {
-  res.json({ ok: true, days: currentSchedule().days || {}, announcement: settings.announcement, dayNames: DAY_NAMES });
+  res.json({ ok: true, days: currentSchedule().days || {}, announcement: settings.announcement, dayNames: DAY_NAMES, hiddenTabs: settings.hiddenTabs, hiddenRank: settings.hiddenRank });
 });
 app.put('/api/admin/settings', adminAuth, (req, res) => {
   const b = req.body || {};
@@ -618,7 +621,7 @@ app.put('/api/admin/settings', adminAuth, (req, res) => {
   }
   const announcement = typeof b.announcement === 'string' ? b.announcement.trim() : '';
   if (announcement.length > 300) return res.status(400).json({ ok: false, message: 'ประกาศยาวเกิน 300 ตัวอักษร' });
-  settings = { days, announcement };
+  settings = { days, announcement, ...parseHidden(b, settings) };
   try { saveSettings(); } catch (e) { return res.status(500).json({ ok: false, message: 'บันทึกไม่สำเร็จ: ' + e.message }); }
   res.json({ ok: true });
 });
