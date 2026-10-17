@@ -625,6 +625,8 @@ app.put('/api/admin/settings', adminAuth, (req, res) => {
 
 // แชท (โค้ดอยู่ในไฟล์ chat.js ปิดได้ด้วย CHAT_ENABLED=false)
 require('./chat')({ app, cfg, DATA_DIR, adminAuth, sendWebhook });
+// กระดานคะแนนมินิเกม (โค้ดอยู่ในไฟล์ games.js ปิดได้ด้วย GAMES_ENABLED=false)
+require('./games')({ app, cfg, DATA_DIR, adminAuth, sendWebhook });
 // อันดับผู้เล่น (โค้ดอยู่ในไฟล์ ranking.js ไม่ตั้งค่า SFTP_* = ปิด)
 require('./ranking')({ app, DATA_DIR, adminAuth });
 

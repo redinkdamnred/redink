@@ -13,7 +13,7 @@
 <script>try{var m=localStorage.getItem('theme'),t=localStorage.getItem('srvState');if(m==='dark'||m==='light')document.documentElement.setAttribute('data-theme',m);else if(t==='closed'||t==='open')document.documentElement.setAttribute('data-theme',t==='closed'?'dark':'light')}catch(e){}</script>
 <script>try{if(sessionStorage.getItem('mxIntro'))document.documentElement.classList.add('mx-no-intro');else sessionStorage.setItem('mxIntro','1')}catch(e){}</script>
 <link rel="stylesheet" href="/style.css?v=7">
-<link rel="stylesheet" href="/pixel-fx.css?v=6"><link rel="stylesheet" href="/extra-fx.css?v=2"><link rel="stylesheet" href="/more-fx.css?v=8"><link rel="stylesheet" href="/mc-extra.css?v=4">
+<link rel="stylesheet" href="/pixel-fx.css?v=6"><link rel="stylesheet" href="/extra-fx.css?v=2"><link rel="stylesheet" href="/more-fx.css?v=8"><link rel="stylesheet" href="/mc-extra.css?v=5">
 <script src="/no-zoom.js?v=6"></script>
 </head>
 <body>
@@ -32,6 +32,7 @@
       <button type="button" class="nv" data-h="players" data-target="p-players"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M17 14c2.5 0 4 2 4 5"/></svg><span>กำลังเล่นอยู่</span><b class="badge" id="navPl"></b></button>
       <button type="button" class="nv" data-h="chat" data-target="chatBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span>แชทกลุ่ม</span></button>
       <button type="button" class="nv" data-h="rank" data-target="rankBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4v1a4 4 0 0 0 4 4M16 6h4v1a4 4 0 0 1-4 4"/><path d="M12 13v4M8 21h8M10 17h4"/></svg><span>อันดับผู้เล่น</span></button>
+      <button type="button" class="nv" data-h="games" data-target="gamesBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="7" width="19" height="10" rx="3"/><path d="M7 10v4M5 12h4M15.5 11h.01M18 13h.01"/></svg><span>มินิเกม</span></button>
       <button type="button" class="nv" data-h="chart" data-target="p-chart"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg><span>จำนวนผู้เล่น</span></button>
       <button type="button" class="nv" data-h="history" data-target="p-history"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span>ประวัติสถานะ</span></button>
       <button type="button" class="nv" data-h="sched" data-target="schedBox" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>ช่วงเวลาที่มักเปิด</span></button>
@@ -117,6 +118,14 @@
       <button type="button" data-k="dist" aria-pressed="false">เดินทางไกลสุด</button>
     </div>
     <ol class="rank" id="rankList"></ol>
+  </section>
+
+  <section class="block panel" id="gamesBox" aria-labelledby="h-games" hidden>
+    <div class="chat-head">
+      <h2 id="h-games">มินิเกม</h2>
+      <span class="small muted" id="mcgDay"></span>
+    </div>
+    <div id="mcgRoot"></div>
   </section>
 
   <section class="block panel" id="p-chart" aria-labelledby="h-cnt">
@@ -208,7 +217,7 @@
     else if(!shown(current))showPanel('p-overview',false);
   }
   navBtns.forEach(function(b){b.addEventListener('click',function(){showPanel(b.getAttribute('data-target'),true)})});
-  ['chatBox','rankBox','schedBox'].forEach(function(id){
+  ['chatBox','rankBox','schedBox','gamesBox'].forEach(function(id){
     new MutationObserver(syncNav).observe($(id),{attributes:true,attributeFilter:['hidden']});
   });
   syncNav();
@@ -431,7 +440,7 @@
 })();
 </script>
 <script src="/chat-client.js?v=6" defer></script>
-<script src="/ranking-client.js?v=10" defer></script>
-<script src="/pixel-fx.js?v=7" defer></script><script src="/extra-fx.js?v=2" defer></script><script src="/more-fx.js?v=5" defer></script><script src="/mc-extra.js?v=4" defer></script>
+<script src="/ranking-client.js?v=11" defer></script>
+<script src="/pixel-fx.js?v=7" defer></script><script src="/extra-fx.js?v=2" defer></script><script src="/more-fx.js?v=5" defer></script><script src="/mc-extra.js?v=5" defer></script><script src="/mc-games.js?v=1" defer></script>
 </body>
 </html>

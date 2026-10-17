@@ -129,6 +129,82 @@
   list.parentNode.insertBefore(pod, list);
   var prevRank = {}, prevTop = {}, lastKind = null;
 
+  /* ---------- ฉายา + ความหายากของการ์ด (คำนวณจากอันดับในทุกหมวด) ---------- */
+  var KINDS = ['blocks', 'ores', 'mobs', 'hours', 'deaths', 'dist'];
+  var KIND_NAME = { blocks: 'ขุดบล็อก', ores: 'ขุดแร่', mobs: 'ฆ่ามอนสเตอร์', hours: 'เวลาเล่น', deaths: 'ตาย', dist: 'เดินทาง' };
+  var TITLE = { blocks: 'นักขุดผู้ไม่เคยหลับ', ores: 'ราชาแร่', mobs: 'นักล่ามอนสเตอร์', hours: 'ติดเกมตัวพ่อ', deaths: 'ลูกครีปเปอร์ประจำเซิร์ฟ', dist: 'นักเดินทางไกล' };
+  var MINOR = { blocks: 'มือขุดฝีมือดี', ores: 'นักสำรวจแร่', mobs: 'นักรบแนวหน้า', hours: 'เซียนเกมตัวจริง', deaths: 'เพื่อนซี้ลาวา', dist: 'เท้าไฟ' };
+  var RARITY = [
+    { k: 'legendary', name: 'Legendary', min: 0.78 }, { k: 'epic', name: 'Epic', min: 0.58 },
+    { k: 'rare', name: 'Rare', min: 0.4 }, { k: 'uncommon', name: 'Uncommon', min: 0.22 }, { k: 'common', name: 'Common', min: 0 }
+  ];
+  var meta = {};
+  function computeMeta(players) {
+    var out = {}, byKind = {};
+    players.forEach(function (p) { out[p.n] = { ranks: {}, titles: [], score: 0 }; });
+    KINDS.forEach(function (kd) {
+      var k = KEY[kd];
+      var arr = players.filter(function (p) { return p[k] > 0; }).sort(function (a, b) { return b[k] - a[k] || a.n.localeCompare(b.n); });
+      byKind[kd] = arr.length;
+      arr.forEach(function (p, i) {
+        var m = out[p.n]; m.ranks[kd] = i + 1;
+        if (kd !== 'deaths') m.score += (arr.length - i - 0.5) / arr.length;   // ตายเยอะไม่ทำให้การ์ดหายากขึ้น
+        if (i === 0) m.titles.push({ kd: kd, text: TITLE[kd], top: true });
+        else if (i < 3 && arr.length >= 4) m.titles.push({ kd: kd, text: MINOR[kd], top: false });
+      });
+    });
+    players.forEach(function (p) {
+      var m = out[p.n], v = m.score / 5, r = RARITY[RARITY.length - 1];
+      for (var i = 0; i < RARITY.length; i++) if (v >= RARITY[i].min) { r = RARITY[i]; break; }
+      m.rarity = r; m.main = m.titles.length ? (m.titles.filter(function (t) { return t.top; })[0] || m.titles[0]).text : 'นักผจญภัยหน้าใหม่';
+      m.total = byKind;
+    });
+    return out;
+  }
+
+  /* ---------- การ์ดผู้เล่นสะสม ---------- */
+  var cardOv = null, cardPrevFocus = null;
+  function closeCard() { if (cardOv) { cardOv.parentNode && cardOv.parentNode.removeChild(cardOv); cardOv = null; if (cardPrevFocus && cardPrevFocus.focus) { try { cardPrevFocus.focus(); } catch (e) {} } } }
+  function mk(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function showCard(p) {
+    closeCard(); hideTip();
+    var m = meta[p.n] || { ranks: {}, titles: [], rarity: RARITY[4], main: 'นักผจญภัยหน้าใหม่', total: {} };
+    cardPrevFocus = document.activeElement;
+    var ov = mk('div', 'mcx-card-ov'); ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'การ์ดผู้เล่น ' + p.n);
+    var card = mk('div', 'mcx-card r-' + m.rarity.k);
+    var top = mk('div', 'mcx-card-top'); top.appendChild(mk('span', 'mcx-card-r', m.rarity.name));
+    var x = mk('button', 'mcx-card-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'ปิดการ์ด'); x.addEventListener('click', closeCard); top.appendChild(x);
+    var art = mk('div', 'mcx-card-art');
+    var img = document.createElement('img'); img.alt = ''; img.referrerPolicy = 'no-referrer';
+    img.src = 'https://mc-heads.net/body/' + encodeURIComponent(p.n) + '/200';
+    img.addEventListener('error', function () { if (!img._fb) { img._fb = 1; img.src = 'https://mc-heads.net/avatar/' + encodeURIComponent(p.n) + '/128'; } else img.style.visibility = 'hidden'; });
+    if (p.known === false) img.style.visibility = 'hidden';
+    art.appendChild(img);
+    var nm = mk('div', 'mcx-card-n', p.n), tt = mk('div', 'mcx-card-t', m.main);
+    var tbl = mk('div', 'mcx-card-stats');
+    KINDS.forEach(function (kd) {
+      var v = p[KEY[kd]] || 0, r = m.ranks[kd], row = mk('div', 'mcx-card-row');
+      row.appendChild(mk('span', 'l', KIND_NAME[kd])); row.appendChild(mk('b', 'v', v > 0 ? fmt(kd, v) : '–'));
+      row.appendChild(mk('i', 'rk' + (r === 1 ? ' g' : ''), r ? '#' + r : ''));
+      tbl.appendChild(row);
+    });
+    var tags = mk('div', 'mcx-card-tags');
+    m.titles.forEach(function (t) { tags.appendChild(mk('span', 'tag' + (t.top ? ' top' : ''), t.text)); });
+    if (!m.titles.length) tags.appendChild(mk('span', 'tag', 'ยังไม่มีฉายา ขุดเพิ่มอีกหน่อย!'));
+    card.appendChild(top); card.appendChild(art); card.appendChild(nm); card.appendChild(tt); card.appendChild(tbl); card.appendChild(tags);
+    ov.appendChild(card); document.body.appendChild(ov); cardOv = ov;
+    ov.addEventListener('click', function (e) { if (e.target === ov) closeCard(); });
+    requestAnimationFrame(function () { ov.classList.add('in'); x.focus(); });
+    if (window.mcSfx) window.mcSfx('adv');
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && cardOv) closeCard(); });
+  function cardBtn(p) {
+    var b = mk('button', 'mcx-cardbtn', 'การ์ด'); b.type = 'button'; b.setAttribute('aria-label', 'ดูการ์ดของ ' + p.n);
+    b.addEventListener('click', function (e) { e.stopPropagation(); showCard(p); });
+    b.addEventListener('mouseenter', function (e) { e.stopPropagation(); });
+    return b;
+  }
+
   function moveBadge(delta) {
     var b = document.createElement('i');
     b.className = 'mcx-mv ' + (delta > 0 ? 'up' : 'down');
@@ -166,7 +242,8 @@
     if (delta) hd.appendChild(moveBadge(delta));
     var nm = document.createElement('div'); nm.className = 'mcx-pd-n'; nm.textContent = p.n;
     var vl = document.createElement('div'); vl.className = 'mcx-pd-v'; vl.textContent = fmt(kind, p[k]);
-    who.appendChild(hd); who.appendChild(nm); who.appendChild(vl);
+    var mt = meta[p.n], tl = mk('div', 'mcx-pd-t', mt ? mt.main : '');
+    who.appendChild(hd); who.appendChild(nm); who.appendChild(tl); who.appendChild(vl); who.appendChild(cardBtn(p));
     var st = document.createElement('div'); st.className = 'mcx-pd-step'; st.textContent = i + 1;
     d.appendChild(who); d.appendChild(st);
     wireTip(d, p);
@@ -179,6 +256,7 @@
     pod.textContent = '';
     stat.textContent = data && data.updatedAt ? ago(data.updatedAt) : '';
     var k = KEY[kind];
+    meta = computeMeta(data ? data.players : []);
     var rows = (data ? data.players : []).filter(function (p) { return p[k] > 0; })
       .sort(function (a, b) { return b[k] - a[k] || a.n.localeCompare(b.n); }).slice(0, 10);
 
@@ -229,7 +307,7 @@
       var nm = document.createElement('span'); nm.className = 'rn'; nm.textContent = p.n;
       var vl = document.createElement('span'); vl.className = 'rv'; vl.textContent = fmt(kind, p[k]);
       vl.title = LABEL[kind];
-      li.appendChild(nm); if (d) li.appendChild(moveBadge(d)); li.appendChild(vl);
+      li.appendChild(nm); if (d) li.appendChild(moveBadge(d)); li.appendChild(cardBtn(p)); li.appendChild(vl);
       li.className = 'has-tip' + (d > 0 ? ' mv-up' : d < 0 ? ' mv-down' : '');
       wireTip(li, p);
       list.appendChild(li);
