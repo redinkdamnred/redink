@@ -409,7 +409,7 @@
     var cs = el('style');
     var sw = cursorURI(swordMap()), pk = cursorURI(pickMap());
     cs.textContent = 'html.mcx-cur,html.mcx-cur body{cursor:url("' + sw + '") 1 1,auto}' +
-      'html.mcx-cur a,html.mcx-cur button,html.mcx-cur .nv,html.mcx-cur .has-tip,html.mcx-cur .chip,html.mcx-cur .mcx-pd,html.mcx-cur .mcx-mob,html.mcx-cur label,html.mcx-cur select,html.mcx-cur [role="button"]{cursor:url("' + pk + '") 9 9,pointer}' +
+      'html.mcx-cur a,html.mcx-cur button,html.mcx-cur .nv,html.mcx-cur .has-tip,html.mcx-cur .chip,html.mcx-cur .mcx-pd,html.mcx-cur .mcx-fig,html.mcx-cur label,html.mcx-cur select,html.mcx-cur [role="button"]{cursor:url("' + pk + '") 9 9,pointer}' +
       'html.mcx-cur input,html.mcx-cur textarea{cursor:text}';
     doc.head.appendChild(cs);
   } catch (e) {}
@@ -566,10 +566,10 @@
     batA: { g: ['BB.......BB', 'BBB.B.B.BBB', '.BBBBBBBBB.', '..BBBBBBB..', '...BEBEB...', '....B.B....'], p: { B: '#3a2c45', E: '#ff4a4a' }, px: 4 },
     batB: { g: ['...........', '.....B.B...', 'BB.BBBBB.BB', 'BBBBBBBBBBB', '.BBBEBEBBB.', '..B..B.B...'], p: { B: '#3a2c45', E: '#ff4a4a' }, px: 4 }
   };
-  var mobBusy = false, mobTimer = 0;
+  var mobBusy = false, mobTimer = 0, mobDog = 0;
   function finishMob(m) {
     if (m.parentNode) m.parentNode.removeChild(m);
-    mobBusy = false; scheduleMob(rnd(40000, 90000));
+    clearTimeout(mobDog); mobBusy = false; scheduleMob(rnd(40000, 90000));
   }
   function portal(m) {
     var r = m.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -583,7 +583,7 @@
     }
   }
   function makeMob(kind) {
-    var s = SPR[kind], m = el('div', 'mcx-mob ' + kind), inner = el('div', 'mcx-mob-in');
+    var s = SPR[kind], m = el('div', 'mcx-fig ' + ({ pig: 'fa', ender: 'fb', batA: 'fc' }[kind] || 'fa')), inner = el('div', 'mcx-fig-in');
     inner.innerHTML = pixSVG(s.g, s.p, '');
     var svg = inner.firstChild; svg.style.width = (s.g[0].length * s.px) + 'px'; svg.style.height = (s.g.length * s.px) + 'px';
     m.appendChild(inner); body.appendChild(m); return { m: m, inner: inner };
@@ -606,7 +606,7 @@
         // เอนเดอร์แมนวาป
         portal(m); window.mcSfx('tele');
         x += dir * Math.min(Math.abs(end - x), rnd(70, 190)); m.style.left = x + 'px';
-        m.classList.add('blink'); setTimeout(function () { m.classList.remove('blink'); }, 260);
+        m.classList.add('fe'); setTimeout(function () { m.classList.remove('fe'); }, 260);
         portal(m); segment();
       };
     }
@@ -621,8 +621,8 @@
   }
   function flyBat() {
     var a = makeMob('batA'), m = a.m, dir = Math.random() < 0.5 ? 1 : -1, vw = innerWidth, vh = innerHeight;
-    m.classList.remove('batA'); m.classList.add('bat'); m.style.top = '0px'; m.style.bottom = 'auto'; m.style.left = '0px';
-    var b = el('div', 'mcx-mob-in b'); b.innerHTML = pixSVG(SPR.batB.g, SPR.batB.p, '');
+    m.classList.remove('fc'); m.classList.add('fd'); m.style.top = '0px'; m.style.bottom = 'auto'; m.style.left = '0px';
+    var b = el('div', 'mcx-fig-in alt'); b.innerHTML = pixSVG(SPR.batB.g, SPR.batB.p, '');
     var sv = b.firstChild; sv.style.width = (SPR.batB.g[0].length * 4) + 'px'; sv.style.height = (SPR.batB.g.length * 4) + 'px';
     m.appendChild(b);
     var base = rnd(vh * 0.12, vh * 0.5), amp = rnd(24, 60), x0 = dir > 0 ? -60 : vw + 60, x1 = dir > 0 ? vw + 60 : -60, kf = [], N = 36, ph = rnd(0, 6);
@@ -633,17 +633,22 @@
     if (!canAnim(m)) { finishMob(m); return; }
     var an = m.animate(kf, { duration: rnd(7000, 10000), easing: 'linear', fill: 'forwards' });
     an.onfinish = function () { clearInterval(fl); finishMob(m); };
-    var fl = setInterval(function () { m.classList.toggle('flap'); }, 140);
+    var fl = setInterval(function () { m.classList.toggle('ff'); }, 140);
     m.addEventListener('click', function () { window.mcSfx('bat'); });
     window.mcSfx('bat');
   }
   function spawnMob(kind) {
     if (mobBusy || doc.hidden || reduce) return;
     mobBusy = true;
+    clearTimeout(mobDog);
+    mobDog = setTimeout(function () {   // กันค้าง: ถ้าสัตว์ตัวไหนไม่จบภายใน 40 วิ ล้างทิ้งแล้วให้ตัวถัดไปออกได้
+      [].forEach.call(doc.querySelectorAll('.mcx-fig'), function (n) { if (n.parentNode) n.parentNode.removeChild(n); });
+      mobBusy = false; scheduleMob(rnd(20000, 40000));
+    }, 40000);
     kind = kind || pick(['pig', 'ender', 'bat']);
     try { if (kind === 'bat') flyBat(); else walkMob(kind); } catch (e) { mobBusy = false; }
   }
   window.mcSpawnMob = spawnMob;
   function scheduleMob(ms) { clearTimeout(mobTimer); if (!reduce) mobTimer = setTimeout(function () { spawnMob(); if (!mobBusy) scheduleMob(rnd(20000, 40000)); }, ms); }
-  try { scheduleMob(rnd(25000, 45000)); } catch (e) {}
+  try { scheduleMob(rnd(8000, 15000)); } catch (e) {}
 })();
